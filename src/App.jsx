@@ -9,7 +9,6 @@ function App() {
       <Routes>
         <Route path="/" element={<PatientComponentPage />} />
         <Route path="/clinic" element={<ClinicalDashboard />} />
-
       </Routes>
     </Router>
   );
