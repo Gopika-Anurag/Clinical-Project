@@ -1098,6 +1098,7 @@ export default function PatientComponentPage() {
     </>
 
 
+
 );
 }
 
