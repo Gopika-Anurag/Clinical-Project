@@ -16,6 +16,12 @@ const allStyles = `
     --sidebar-active: #3b82f6;
     --tab-inactive-bg: #e5e7eb;
     --tab-inactive-text: #6b7280;
+    --status-paid-bg: #dcfce7;
+    --status-paid-text: #166534;
+    --status-pending-bg: #fef9c3;
+    --status-pending-text: #854d0e;
+    --status-denied-bg: #fee2e2;
+    --status-denied-text: #991b1b;
   }
 
   *, *::before, *::after {
@@ -327,6 +333,47 @@ const allStyles = `
     border-radius: 0.5rem;
   }
 
+  .status-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-weight: 600;
+    font-size: 0.75rem;
+  }
+  .status-paid { background-color: var(--status-paid-bg); color: var(--status-paid-text); }
+  .status-pending { background-color: var(--status-pending-bg); color: var(--status-pending-text); }
+  .status-denied { background-color: var(--status-denied-bg); color: var(--status-denied-text); }
+  
+  .calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 1px;
+    background-color: var(--border-color);
+    border: 1px solid var(--border-color);
+  }
+  .calendar-day {
+    background-color: var(--card-background);
+    padding: 0.5rem;
+  }
+  .calendar-day-header {
+    text-align: center;
+    font-weight: 600;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border-color);
+  }
+  .calendar-appointments {
+    min-height: 400px;
+  }
+  .calendar-appointment {
+    background-color: #eef2ff;
+    border-left: 3px solid var(--primary-color);
+    padding: 0.5rem;
+    border-radius: 0.25rem;
+    margin-top: 0.5rem;
+  }
+  .calendar-appointment p { margin: 0; }
+  .calendar-appointment .time { font-weight: bold; }
+  .calendar-appointment .patient { font-size: 0.875rem; }
+
   .sidebar-contact {
     margin-top: 1.5rem;
     padding-top: 1.5rem;
@@ -424,6 +471,13 @@ const allStyles = `
     .stat-value {
         font-size: 2rem;
     }
+    
+    .calendar-grid {
+        display: block;
+    }
+    .calendar-day {
+        margin-bottom: 1rem;
+    }
   }
 `;
 
@@ -434,6 +488,21 @@ const userManagementData = [
   { id: 3, name: 'Michael Scott', role: 'Office Manager', email: 'm.scott@clinicplus.com', status: 'Active' },
   { id: 4, name: 'Pam Beesly', role: 'Receptionist', email: 'p.beesly@clinicplus.com', status: 'Inactive' },
 ];
+
+const claimsManagementData = [
+    { id: 'C5821', patient: 'John Appleseed', insurer: 'Blue Cross', amount: 150.00, submitted: '2025-10-01', status: 'Pending' },
+    { id: 'C5820', patient: 'Jane Doe', insurer: 'Aetna', amount: 225.50, submitted: '2025-09-28', status: 'Paid' },
+    { id: 'C5819', patient: 'Peter Jones', insurer: 'Cigna', amount: 75.00, submitted: '2025-09-25', status: 'Paid' },
+    { id: 'C5818', patient: 'Alice Williams', insurer: 'Blue Cross', amount: 310.00, submitted: '2025-09-22', status: 'Denied' },
+];
+
+const masterCalendarEventsData = {
+    'Monday': [{ time: '09:00 AM', doctor: 'Dr. Reed', patient: 'A. Smith', reason: 'New Patient Visit' }, { time: '10:00 AM', doctor: 'Dr. Johnson', patient: 'B. Miller', reason: 'Follow-up' }],
+    'Tuesday': [{ time: '10:00 AM', doctor: 'Dr. Reed', patient: 'John Appleseed', reason: 'Annual Checkup' }],
+    'Wednesday': [],
+    'Thursday': [{ time: '11:00 AM', doctor: 'Dr. Johnson', patient: 'C. Davis', reason: 'Consultation' }],
+    'Friday': [{ time: '09:30 AM', doctor: 'Dr. Reed', patient: 'D. Evans', reason: 'Physical' }],
+};
 
 const doctorPatientListData = [
   { id: 101, name: 'John Appleseed', dob: '1985-05-20', lastVisit: '2025-10-01' },
@@ -526,6 +595,63 @@ const UserManagementTab = () => (
                     ))}
                 </tbody>
             </table>
+        </div>
+    </div>
+);
+
+const InsuranceClaimsTab = () => {
+    const getStatusClass = (status) => {
+        if (status === 'Paid') return 'status-paid';
+        if (status === 'Pending') return 'status-pending';
+        if (status === 'Denied') return 'status-denied';
+        return '';
+    };
+
+    return (
+        <div className="card">
+            <h3 className="card-title">Insurance Claims Management</h3>
+             <div className="table-wrapper">
+                <table className="data-table">
+                    <thead>
+                        <tr><th>Claim ID</th><th>Patient</th><th>Insurer</th><th>Amount</th><th>Submitted</th><th>Status</th><th>Actions</th></tr>
+                    </thead>
+                    <tbody>
+                        {claimsManagementData.map(claim => (
+                            <tr key={claim.id}>
+                                <td>{claim.id}</td>
+                                <td>{claim.patient}</td>
+                                <td>{claim.insurer}</td>
+                                <td>${claim.amount.toFixed(2)}</td>
+                                <td>{claim.submitted}</td>
+                                <td><span className={`status-badge ${getStatusClass(claim.status)}`}>{claim.status}</span></td>
+                                <td><button className="btn btn-primary">View Details</button></td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    );
+};
+
+const MasterCalendarTab = () => (
+    <div className="card">
+        <h3 className="card-title">Master Calendar - This Week</h3>
+        <div className="calendar-grid">
+            {Object.keys(masterCalendarEventsData).map(day => (
+                <div key={day} className="calendar-day">
+                    <div className="calendar-day-header">{day}</div>
+                    <div className="calendar-appointments">
+                        {masterCalendarEventsData[day].map(appt => (
+                            <div key={appt.time} className="calendar-appointment">
+                                <p className="time">{appt.time}</p>
+                                <p className="patient">{appt.patient}</p>
+                                <p className="item-meta">{appt.doctor}</p>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            ))}
         </div>
     </div>
 );
@@ -639,6 +765,7 @@ const AdminDashboard = ({ activeTab, setActiveTab }) => {
     switch(activeTab) {
       case 'Overview': return <AdminOverviewTab />;
       case 'User Management': return <UserManagementTab />;
+      case 'Claims': return <InsuranceClaimsTab />;
       case 'Analytics': return <div className="card"><p>Advanced analytics charts on patient demographics, revenue, and appointments would be here.</p></div>;
       case 'Settings': return <div className="card"><p>Forms to manage clinic-wide settings, billing codes, and integrations would be here.</p></div>;
       case 'Dashboard':
@@ -656,7 +783,7 @@ const AdminDashboard = ({ activeTab, setActiveTab }) => {
   return (
     <div>
         <div className="tabs">
-            {['Overview', 'Dashboard', 'User Management', 'Analytics', 'Settings'].map(tab => (
+            {['Overview', 'Dashboard', 'User Management', 'Claims', 'Analytics', 'Settings'].map(tab => (
                  <button key={tab} className={`tab ${activeTab === tab ? 'active' : ''}`} onClick={() => setActiveTab(tab)}>{tab}</button>
             ))}
         </div>
@@ -685,7 +812,7 @@ const DoctorDashboard = ({ activeTab, setActiveTab }) => {
                   <a href="#" className="btn btn-primary">Open Chart</a>
                 </li>
               </ul>
-            </div>
+           </div>
         )
     }
   }
@@ -706,6 +833,7 @@ const OfficeDashboard = ({ activeTab, setActiveTab }) => {
    const renderTabContent = () => {
     switch(activeTab) {
       case 'Appointments': return <OfficeAppointmentsTab />;
+      case 'Claims': return <InsuranceClaimsTab />;
       case 'Reports': return <OfficeReportsTab />;
       case 'Billing':
       default:
@@ -730,7 +858,7 @@ const OfficeDashboard = ({ activeTab, setActiveTab }) => {
   return (
     <div>
       <div className="tabs">
-        {['Billing', 'Appointments', 'Reports'].map(tab => (
+        {['Billing', 'Claims', 'Appointments', 'Reports'].map(tab => (
             <button key={tab} className={`tab ${activeTab === tab ? 'active' : ''}`} onClick={() => setActiveTab(tab)}>{tab}</button>
         ))}
       </div>
@@ -742,7 +870,7 @@ const OfficeDashboard = ({ activeTab, setActiveTab }) => {
 const ReceptionDashboard = ({ activeTab, setActiveTab }) => {
     const renderTabContent = () => {
       switch(activeTab) {
-        case 'Scheduler': return <OfficeAppointmentsTab />;
+        case 'Master Calendar': return <MasterCalendarTab />;
         case 'Patient Registration': return <PatientRegistrationTab />;
         case 'Patient Queue':
         default:
@@ -767,9 +895,9 @@ const ReceptionDashboard = ({ activeTab, setActiveTab }) => {
     return (
         <div>
             <div className="tabs">
-                 {['Patient Queue', 'Scheduler', 'Patient Registration'].map(tab => (
+                 {['Patient Queue', 'Master Calendar', 'Patient Registration'].map(tab => (
                     <button key={tab} className={`tab ${activeTab === tab ? 'active' : ''}`} onClick={() => setActiveTab(tab)}>{tab}</button>
-                ))}
+                 ))}
             </div>
             <div>{renderTabContent()}</div>
         </div>
@@ -785,10 +913,10 @@ export default function ClinicalDashboard() {
 
   const getSidebarLinks = () => {
     const links = {
-        admin: ['Overview', 'Dashboard', 'User Management', 'Analytics', 'Settings'],
+        admin: ['Overview', 'Dashboard', 'User Management', 'Claims', 'Analytics', 'Settings'],
         doctor: ["Today's Schedule", 'Patients', 'Messages'],
-        office: ['Billing', 'Appointments', 'Reports'],
-        reception: ['Patient Queue', 'Scheduler', 'Patient Registration'],
+        office: ['Billing', 'Claims', 'Appointments', 'Reports'],
+        reception: ['Patient Queue', 'Master Calendar', 'Patient Registration'],
     };
     return links[role] || [];
   };
