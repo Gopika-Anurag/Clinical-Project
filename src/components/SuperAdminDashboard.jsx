@@ -431,8 +431,8 @@ const adminAppointmentTypesData = [
 
 
 // --- Icons ---
-const MenuIcon = (props) => ( <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg> );
-const ArrowUpIcon = (props) => ( <svg {...props} xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M12 5v14"/><path d="m18 11-6-6-6 6"/></svg> );
+const MenuIcon = (props) => ( <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg> );
+const ArrowUpIcon = (props) => ( <svg {...props} xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M12 5v14"/><path d="m18 11-6-6-6 6"/></svg> );
 
 // --- Helper Components ---
 const DataTable = ({ headers, data, renderRow }) => (
@@ -606,7 +606,18 @@ export default function SuperAdminDashboard() {
   const [isSidebarOpen, setIsSidebarOpen] = React.useState(false);
 
   const sidebarLinks = {
-    superAdmin: ['Dashboard', 'Clinic Management', 'User Management', 'Billing', 'System Settings'],
+    superAdmin: [
+        'Dashboard', 
+        'Clinic Management', 
+        'User Management', 
+        'Billing', 
+        'System Settings', 
+        'Admin Dashboard View',
+        'Staff Management', 
+        'Claims', 
+        'Analytics', 
+        'Clinic Settings'
+    ],
     admin: ['Dashboard', 'Staff Management', 'Claims', 'Analytics', 'Clinic Settings']
   };
 
@@ -622,6 +633,12 @@ export default function SuperAdminDashboard() {
             case 'User Management': return <AdminUserManagement />;
             case 'Billing': return <SuperAdminBilling />;
             case 'System Settings': return <SuperAdminSystemSettings />;
+            // Admin Views for Super Admin
+            case 'Admin Dashboard View': return <AdminDashboard />;
+            case 'Staff Management': return <AdminStaffManagement />;
+            case 'Claims': return <AdminClaimsManagement />;
+            case 'Analytics': return <AdminAnalytics />;
+            case 'Clinic Settings': return <AdminClinicSettings />;
             default: return <div className="card"><h3 className="card-title">{activeView}</h3></div>;
         }
     }
@@ -670,7 +687,13 @@ export default function SuperAdminDashboard() {
           <header className="header">
             <div className="header-main">
                 <button className="hamburger-btn" onClick={() => setIsSidebarOpen(true)}><MenuIcon /></button>
-                <h1>{role === 'superAdmin' ? 'System' : 'Clinic'} Overview</h1>
+                <h1>
+                    {(() => {
+                        if (role === 'admin') return 'Clinic Overview';
+                        if (['Admin Dashboard View', 'Staff Management', 'Claims', 'Analytics', 'Clinic Settings'].includes(activeView)) return 'Admin View';
+                        return 'System Overview';
+                    })()}
+                </h1>
             </div>
             <div className="role-switcher">
               <button onClick={() => setRole('superAdmin')} className={role === 'superAdmin' ? 'active' : ''}>Super Admin</button>
