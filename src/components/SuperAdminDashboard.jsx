@@ -233,6 +233,9 @@ const allStyles = `
     background-color: var(--background-color);
     font-weight: 600;
   }
+  .data-table tbody tr:hover {
+    background-color: #f9fafb;
+  }
   
   .status-badge {
     padding: 0.25rem 0.75rem;
@@ -256,16 +259,22 @@ const allStyles = `
     text-decoration: none;
     border: 1px solid transparent;
     cursor: pointer;
+    transition: background-color 0.2s, transform 0.1s, box-shadow 0.2s;
+  }
+  
+  .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  }
+  .btn:active {
+    transform: translateY(-1px) scale(0.98);
+    box-shadow: 0 2px 3px rgba(0,0,0,0.1);
   }
 
-  .btn-primary {
-    background-color: var(--primary-color);
-    color: white;
-  }
-  .btn-secondary {
-    background-color: #e5e7eb;
-    color: #374151;
-  }
+  .btn-primary { background-color: var(--primary-color); color: white; }
+  .btn-primary:hover { background-color: var(--primary-dark); }
+  .btn-secondary { background-color: #e5e7eb; color: #374151; }
+  .btn-secondary:hover { background-color: #d1d5db; }
   
   .form-grid {
     display: grid;
@@ -280,7 +289,8 @@ const allStyles = `
   .form-group label {
     font-weight: 500;
   }
-  .form-group input {
+  .form-group input, .form-group select, .form-group textarea {
+    width: 100%;
     padding: 0.75rem;
     border-radius: 0.375rem;
     border: 1px solid var(--border-color);
@@ -338,6 +348,21 @@ const allStyles = `
       justify-content: center;
       color: white;
   }
+  
+  /* --- Modal Styles --- */
+  .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.6); display: flex; justify-content: center; align-items: center; z-index: 1050; opacity: 0; animation: fadeIn 0.3s forwards; }
+  .modal-content { background: white; padding: 2rem; border-radius: 0.75rem; box-shadow: 0 5px 15px rgba(0,0,0,0.3); width: 90%; max-width: 600px; position: relative; transform: translateY(-20px); animation: slideIn 0.3s forwards; }
+  .modal-close-btn { position: absolute; top: 1rem; right: 1rem; background: none; border: none; font-size: 1.75rem; cursor: pointer; color: var(--text-secondary); transition: color 0.2s; }
+  .modal-close-btn:hover { color: var(--text-primary); }
+  .modal-header { border-bottom: 1px solid var(--border-color); padding-bottom: 1rem; margin-bottom: 1rem; }
+  .modal-header h2 { margin: 0; }
+  .modal-body .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  .modal-body .detail-item { padding: 0.5rem; background-color: #f9fafb; border-radius: 0.5rem; }
+  .modal-body .detail-item strong { display: block; color: var(--text-secondary); font-size: 0.875rem; margin-bottom: 0.25rem; }
+  .modal-footer { border-top: 1px solid var(--border-color); padding-top: 1rem; margin-top: 1rem; display: flex; justify-content: flex-end; gap: 0.5rem; }
+  
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes slideIn { from { opacity: 0; transform: translateY(-30px); } to { opacity: 1; transform: translateY(0); } }
 
   @media (max-width: 1024px) {
     .lg-grid-cols-3 { grid-template-columns: repeat(1, 1fr); }
@@ -384,9 +409,9 @@ const billingData = [
     { clinicId: 3, clinicName: 'Southshore Specialty Care', plan: 'Basic Tier', status: 'Overdue', nextBilling: '2025-10-01', amount: 99 },
 ];
 const supportTicketsData = [
-    { id: 'TKT-001', subject: 'Login Issue for Northside', clinic: 'Northside Family Health', status: 'Open', lastUpdate: '2 hours ago'},
-    { id: 'TKT-002', subject: 'Billing question', clinic: 'Wellness Center', status: 'Pending', lastUpdate: '1 day ago'},
-    { id: 'TKT-003', subject: 'Feature Request: Custom Reports', clinic: 'Southshore Specialty', status: 'Open', lastUpdate: '3 days ago'},
+    { id: 'TKT-001', subject: 'Login Issue for Northside', clinic: 'Northside Family Health', status: 'Open', lastUpdate: '2 hours ago', details: 'User unable to reset password.'},
+    { id: 'TKT-002', subject: 'Billing question', clinic: 'Wellness Center', status: 'Pending', lastUpdate: '1 day ago', details: 'Question about the last invoice.'},
+    { id: 'TKT-003', subject: 'Feature Request: Custom Reports', clinic: 'Southshore Specialty', status: 'Open', lastUpdate: '3 days ago', details: 'User wants to build custom reports.'},
 ];
 const contentPagesData = [
     { id: 1, title: 'Homepage', path: '/', status: 'Published', lastModified: '2025-10-01' },
@@ -407,13 +432,25 @@ const adminTicketStatusData = [
 // --- Icons ---
 const MenuIcon = (props) => ( <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg> );
 const ArrowUpIcon = (props) => ( <svg {...props} xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M12 5v14"/><path d="m18 11-6-6-6 6"/></svg> );
-const DollarSignIcon = (props) => ( <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg> );
-const BuildingIcon = (props) => ( <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="7" y1="7" x2="7.01" y2="7"></line><line x1="11" y1="7" x2="11.01" y2="7"></line><line x1="15" y1="7" x2="15.01" y2="7"></line><line x1="7" y1="11" x2="7.01" y2="11"></line><line x1="11" y1="11" x2="11.01" y2="11"></line><line x1="15" y1="11" x2="15.01" y2="11"></line><line x1="7" y1="15" x2="7.01" y2="15"></line><line x1="11" y1="15" x2="11.01" y2="15"></line><line x1="15" y1="15" x2="15.01" y2="15"></line></svg> );
-const TicketIcon = (props) => ( <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6V4a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v2M3 18v2a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-2M8 12h8m-8 4h4m-7-8h12a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"/></svg> );
-const UsersIcon = (props) => ( <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg> );
-const PlusCircleIcon = (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="16"></line><line x1="8" y1="12" x2="16" y2="12"></line></svg>;
-const SettingsIcon = (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 0 2l-.15.08a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.38a2 2 0 0 0-.73-2.73l-.15-.1a2 2 0 0 1 0-2l.15-.08a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path><circle cx="12" cy="12" r="3"></circle></svg>;
+const DollarSignIcon = (props) => ( <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg> );
+const BuildingIcon = (props) => ( <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="7" y1="7" x2="7.01" y2="7"></line><line x1="11" y1="7" x2="11.01" y2="7"></line><line x1="15" y1="7" x2="15.01" y2="7"></line><line x1="7" y1="11" x2="7.01" y2="11"></line><line x1="11" y1="11" x2="11.01" y2="11"></line><line x1="15" y1="11" x2="15.01" y2="11"></line><line x1="7" y1="15" x2="7.01" y2="15"></line><line x1="11" y1="15" x2="11.01" y2="15"></line><line x1="15" y1="15" x2="15.01" y2="15"></line></svg> );
+const TicketIcon = (props) => ( <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6V4a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v2M3 18v2a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-2M8 12h8m-8 4h4m-7-8h12a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"/></svg> );
+const UsersIcon = (props) => ( <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg> );
+const PlusCircleIcon = (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="16"></line><line x1="8" y1="12" x2="16" y2="12"></line></svg>;
+const SettingsIcon = (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 0 2l-.15.08a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.38a2 2 0 0 0-.73-2.73l-.15-.1a2 2 0 0 1 0-2l.15-.08a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path><circle cx="12" cy="12" r="3"></circle></svg>;
 
+// --- Reusable Modal Component ---
+const Modal = ({ isOpen, onClose, children }) => {
+    if (!isOpen) return null;
+    return (
+        <div className="modal-overlay" onClick={onClose}>
+            <div className="modal-content" onClick={e => e.stopPropagation()}>
+                <button className="modal-close-btn" onClick={onClose}>&times;</button>
+                {children}
+            </div>
+        </div>
+    );
+};
 
 // --- Helper Components ---
 const DataTable = ({ headers, data, renderRow }) => (
@@ -476,16 +513,16 @@ const SuperAdminDashboardView = () => {
             <div className="card col-span-1 lg:col-span-2">
                 <h3 className="card-title">System Health</h3>
                  <ul className="item-list">
-                    <li>
-                        <div className="activity-icon" style={{backgroundColor: 'var(--secondary-color)'}}>✓</div>
-                        <div className="item-info"><p>API Status</p></div>
-                        <p className="item-meta" style={{color: 'var(--secondary-color)'}}>Operational</p>
-                    </li>
-                    <li>
-                        <div className="activity-icon" style={{backgroundColor: 'var(--secondary-color)'}}>✓</div>
-                        <div className="item-info"><p>Database</p></div>
-                        <p className="item-meta" style={{color: 'var(--secondary-color)'}}>Operational</p>
-                    </li>
+                     <li>
+                         <div className="activity-icon" style={{backgroundColor: 'var(--secondary-color)'}}>✓</div>
+                         <div className="item-info"><p>API Status</p></div>
+                         <p className="item-meta" style={{color: 'var(--secondary-color)'}}>Operational</p>
+                     </li>
+                     <li>
+                         <div className="activity-icon" style={{backgroundColor: 'var(--secondary-color)'}}>✓</div>
+                         <div className="item-info"><p>Database</p></div>
+                         <p className="item-meta" style={{color: 'var(--secondary-color)'}}>Operational</p>
+                     </li>
                  </ul>
             </div>
              <div className="card col-span-1">
@@ -507,28 +544,79 @@ const SuperAdminDashboardView = () => {
         </div>
     );
 };
-const ClinicManagementView = () => (
-     <div className="card">
-        <h3 className="card-title">Clinic Management</h3>
-        <DataTable 
-            headers={['Clinic Name', 'Admin', 'Users', 'Status', 'Actions']}
-            data={clinicsData}
-            renderRow={clinic => (
-                <tr key={clinic.id}>
-                    <td>{clinic.name}</td><td>{clinic.admin}</td><td>{clinic.users}</td>
-                    <td><StatusBadge status={clinic.status} /></td>
-                    <td><button className="btn btn-secondary">Manage</button></td>
-                </tr>
-            )}
-        />
-    </div>
-);
-const SuperAdminBilling = () => (
-    <div className="card">
-        <h3 className="card-title">System-Wide Billing</h3>
-        <DataTable headers={['Clinic', 'Plan', 'Amount', 'Next Billing Date', 'Status', 'Actions']} data={billingData} renderRow={item => ( <tr key={item.clinicId}><td>{item.clinicName}</td><td>{item.plan}</td><td>${item.amount}</td><td>{item.nextBilling}</td><td><StatusBadge status={item.status} /></td><td><button className="btn btn-secondary">View Invoice</button></td></tr> )}/>
-    </div>
-);
+const ClinicManagementView = () => {
+    const [managingClinic, setManagingClinic] = React.useState(null);
+    return(
+        <>
+            <div className="card">
+                <h3 className="card-title">Clinic Management</h3>
+                <DataTable 
+                    headers={['Clinic Name', 'Admin', 'Users', 'Status', 'Actions']}
+                    data={clinicsData}
+                    renderRow={clinic => (
+                        <tr key={clinic.id}>
+                            <td>{clinic.name}</td><td>{clinic.admin}</td><td>{clinic.users}</td>
+                            <td><StatusBadge status={clinic.status} /></td>
+                            <td><button className="btn btn-secondary" onClick={() => setManagingClinic(clinic)}>Manage</button></td>
+                        </tr>
+                    )}
+                />
+            </div>
+            <Modal isOpen={!!managingClinic} onClose={() => setManagingClinic(null)}>
+                {managingClinic && (
+                    <>
+                        <div className="modal-header"><h2>Manage Clinic: {managingClinic.name}</h2></div>
+                        <div className="modal-body">
+                            <div className="form-group">
+                                <label>Clinic Name</label>
+                                <input type="text" defaultValue={managingClinic.name} />
+                            </div>
+                            <div className="form-group" style={{marginTop: '1rem'}}>
+                                <label>Status</label>
+                                <select defaultValue={managingClinic.status}>
+                                    <option>Active</option>
+                                    <option>Inactive</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div className="modal-footer">
+                            <button className="btn btn-secondary" onClick={() => setManagingClinic(null)}>Cancel</button>
+                            <button className="btn btn-primary" onClick={() => setManagingClinic(null)}>Save Changes</button>
+                        </div>
+                    </>
+                )}
+            </Modal>
+        </>
+    );
+};
+
+const SuperAdminBilling = () => {
+    const [viewingInvoice, setViewingInvoice] = React.useState(null);
+    return(
+        <>
+            <div className="card">
+                <h3 className="card-title">System-Wide Billing</h3>
+                <DataTable headers={['Clinic', 'Plan', 'Amount', 'Next Billing Date', 'Status', 'Actions']} data={billingData} renderRow={item => ( <tr key={item.clinicId}><td>{item.clinicName}</td><td>{item.plan}</td><td>${item.amount}</td><td>{item.nextBilling}</td><td><StatusBadge status={item.status} /></td><td><button className="btn btn-secondary" onClick={() => setViewingInvoice(item)}>View Invoice</button></td></tr> )}/>
+            </div>
+            <Modal isOpen={!!viewingInvoice} onClose={() => setViewingInvoice(null)}>
+                {viewingInvoice && (
+                    <>
+                        <div className="modal-header"><h2>Invoice for {viewingInvoice.clinicName}</h2></div>
+                        <div className="modal-body">
+                            <div className="detail-grid">
+                                <div className="detail-item"><strong>Clinic</strong> {viewingInvoice.clinicName}</div>
+                                <div className="detail-item"><strong>Plan</strong> {viewingInvoice.plan}</div>
+                                <div className="detail-item"><strong>Amount</strong> ${viewingInvoice.amount}</div>
+                                <div className="detail-item"><strong>Status</strong> <StatusBadge status={viewingInvoice.status} /></div>
+                            </div>
+                        </div>
+                        <div className="modal-footer"><button className="btn btn-primary" onClick={() => setViewingInvoice(null)}>Close</button></div>
+                    </>
+                )}
+            </Modal>
+        </>
+    );
+};
 const SuperAdminSystemSettings = () => (
     <div className="card">
         <h3 className="card-title">System Settings</h3>
@@ -540,12 +628,36 @@ const SuperAdminSystemSettings = () => (
         </div>
     </div>
 );
-const AdminUserManagement = () => (
-     <div className="card">
-        <h3 className="card-title">Platform Admin Management</h3>
-        <DataTable headers={['Name', 'Email', 'Role', 'Assigned Clinic', 'Status', 'Actions']} data={adminUsersData} renderRow={user => ( <tr key={user.id}><td>{user.name}</td><td>{user.email}</td><td>{user.role}</td><td>{user.clinic}</td><td><StatusBadge status={user.status} /></td><td><button className="btn btn-secondary">Edit</button></td></tr> )}/>
-    </div>
-);
+const AdminUserManagement = () => {
+    const [editingUser, setEditingUser] = React.useState(null);
+    return (
+        <>
+            <div className="card">
+                <h3 className="card-title">Platform Admin Management</h3>
+                <DataTable headers={['Name', 'Email', 'Role', 'Assigned Clinic', 'Status', 'Actions']} data={adminUsersData} renderRow={user => ( <tr key={user.id}><td>{user.name}</td><td>{user.email}</td><td>{user.role}</td><td>{user.clinic}</td><td><StatusBadge status={user.status} /></td><td><button className="btn btn-secondary" onClick={() => setEditingUser(user)}>Edit</button></td></tr> )}/>
+            </div>
+            <Modal isOpen={!!editingUser} onClose={() => setEditingUser(null)}>
+                {editingUser && (
+                     <>
+                        <div className="modal-header"><h2>Edit Admin: {editingUser.name}</h2></div>
+                        <div className="modal-body">
+                           <div className="form-grid">
+                                <div className="form-group"><label>Name</label><input type="text" defaultValue={editingUser.name}/></div>
+                                <div className="form-group"><label>Email</label><input type="email" defaultValue={editingUser.email}/></div>
+                                <div className="form-group"><label>Role</label><input type="text" defaultValue={editingUser.role}/></div>
+                                <div className="form-group"><label>Status</label><select defaultValue={editingUser.status}><option>Active</option><option>Inactive</option></select></div>
+                           </div>
+                        </div>
+                        <div className="modal-footer">
+                            <button className="btn btn-secondary" onClick={() => setEditingUser(null)}>Cancel</button>
+                            <button className="btn btn-primary" onClick={() => setEditingUser(null)}>Save</button>
+                        </div>
+                    </>
+                )}
+            </Modal>
+        </>
+    );
+};
 
 // --- Admin (Platform Manager) Components ---
 const AdminDashboard = () => {
@@ -555,11 +667,11 @@ const AdminDashboard = () => {
                 <StatCard icon={<BuildingIcon/>} label="Assigned Clinics" value="5" />
                 <StatCard icon={<TicketIcon/>} label="Open Support Tickets" value="2" />
                 <StatCard icon={<UsersIcon/>} label="Pending Content" value="1" />
-             </div>
+            </div>
              <div className="card col-span-1 lg:col-span-2">
                 <h3 className="card-title">Support Tickets by Status</h3>
                 <BarChart data={adminTicketStatusData} />
-             </div>
+            </div>
              <div className="card col-span-1">
                 <h3 className="card-title">Recent Content Updates</h3>
                 <ul className="item-list">
@@ -567,7 +679,7 @@ const AdminDashboard = () => {
                         <li key={page.id}><p className="item-info">{page.title}</p><p className="item-meta">Modified: {page.lastModified}</p></li>
                     ))}
                 </ul>
-             </div>
+            </div>
         </div>
     );
 };
@@ -579,22 +691,74 @@ const AssignedClinicsView = () => (
         )}/>
     </div>
 );
-const SupportTicketsView = () => (
-    <div className="card">
-        <h3 className="card-title">Support Tickets</h3>
-        <DataTable headers={['Ticket ID', 'Subject', 'Clinic', 'Status', 'Last Update', 'Actions']} data={supportTicketsData} renderRow={ticket => (
-            <tr key={ticket.id}><td>{ticket.id}</td><td>{ticket.subject}</td><td>{ticket.clinic}</td><td><StatusBadge status={ticket.status} /></td><td>{ticket.lastUpdate}</td><td><button className="btn btn-secondary">View</button></td></tr>
-        )}/>
-    </div>
-);
-const ContentManagementView = () => (
-    <div className="card">
-        <h3 className="card-title">Content Management</h3>
-        <DataTable headers={['Page Title', 'Path', 'Status', 'Last Modified', 'Actions']} data={contentPagesData} renderRow={page => (
-            <tr key={page.id}><td>{page.title}</td><td>{page.path}</td><td><StatusBadge status={page.status} /></td><td>{page.lastModified}</td><td><button className="btn btn-secondary">Edit</button></td></tr>
-        )}/>
-    </div>
-);
+const SupportTicketsView = () => {
+    const [viewingTicket, setViewingTicket] = React.useState(null);
+    return (
+        <>
+            <div className="card">
+                <h3 className="card-title">Support Tickets</h3>
+                <DataTable headers={['Ticket ID', 'Subject', 'Clinic', 'Status', 'Last Update', 'Actions']} data={supportTicketsData} renderRow={ticket => (
+                    <tr key={ticket.id}><td>{ticket.id}</td><td>{ticket.subject}</td><td>{ticket.clinic}</td><td><StatusBadge status={ticket.status} /></td><td>{ticket.lastUpdate}</td><td><button className="btn btn-secondary" onClick={() => setViewingTicket(ticket)}>View</button></td></tr>
+                )}/>
+            </div>
+            <Modal isOpen={!!viewingTicket} onClose={() => setViewingTicket(null)}>
+                {viewingTicket && (
+                    <>
+                       <div className="modal-header"><h2>Ticket: {viewingTicket.id} - {viewingTicket.clinic}</h2></div>
+                       <div className="modal-body">
+                           <div className="form-group">
+                               <label>Subject</label>
+                               <input type="text" defaultValue={viewingTicket.subject} />
+                           </div>
+                           <div className="form-group" style={{marginTop: '1rem'}}>
+                               <label>Details</label>
+                               <textarea rows="4" defaultValue={viewingTicket.details}></textarea>
+                           </div>
+                       </div>
+                       <div className="modal-footer">
+                           <button className="btn btn-secondary" onClick={() => setViewingTicket(null)}>Close</button>
+                           <button className="btn btn-primary" onClick={() => setViewingTicket(null)}>Update Ticket</button>
+                       </div>
+                   </>
+                )}
+            </Modal>
+        </>
+    );
+};
+const ContentManagementView = () => {
+    const [editingPage, setEditingPage] = React.useState(null);
+    return (
+        <>
+            <div className="card">
+                <h3 className="card-title">Content Management</h3>
+                <DataTable headers={['Page Title', 'Path', 'Status', 'Last Modified', 'Actions']} data={contentPagesData} renderRow={page => (
+                    <tr key={page.id}><td>{page.title}</td><td>{page.path}</td><td><StatusBadge status={page.status} /></td><td>{page.lastModified}</td><td><button className="btn btn-secondary" onClick={() => setEditingPage(page)}>Edit</button></td></tr>
+                )}/>
+            </div>
+            <Modal isOpen={!!editingPage} onClose={() => setEditingPage(null)}>
+                {editingPage && (
+                     <>
+                        <div className="modal-header"><h2>Edit Page: {editingPage.title}</h2></div>
+                        <div className="modal-body">
+                           <div className="form-group">
+                               <label>Title</label>
+                               <input type="text" defaultValue={editingPage.title}/>
+                           </div>
+                           <div className="form-group" style={{marginTop: '1rem'}}>
+                               <label>Path</label>
+                               <input type="text" defaultValue={editingPage.path}/>
+                           </div>
+                        </div>
+                        <div className="modal-footer">
+                            <button className="btn btn-secondary" onClick={() => setEditingPage(null)}>Cancel</button>
+                            <button className="btn btn-primary" onClick={() => setEditingPage(null)}>Save</button>
+                        </div>
+                    </>
+                )}
+            </Modal>
+        </>
+    );
+};
 
 
 // --- Main App Component ---

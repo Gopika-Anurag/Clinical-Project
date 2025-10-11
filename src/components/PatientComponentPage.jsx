@@ -143,6 +143,7 @@ const allStyles = `
     padding: 0.5rem;
     border-radius: 50%;
     position: relative;
+    transition: background-color 0.2s;
   }
   
   .notification-dot {
@@ -207,10 +208,12 @@ const allStyles = `
       cursor: pointer;
       text-decoration: none;
       font-size: 0.875rem;
-      transition: background-color 0.2s;
+      transition: background-color 0.2s, transform 0.1s ease-out, box-shadow 0.2s;
   }
   .btn:hover {
       background-color: var(--primary-dark);
+      transform: translateY(-2px);
+      box-shadow: 0 2px 5px rgba(0,0,0,0.15);
   }
   
   .btn-secondary {
@@ -256,6 +259,95 @@ const allStyles = `
       opacity: 1;
       visibility: visible;
   }
+  
+  .modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+  }
+
+  .modal-content {
+    background: var(--card-background);
+    padding: 2rem;
+    border-radius: 0.75rem;
+    width: 90%;
+    max-width: 600px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    position: relative;
+    animation: fadeIn 0.3s ease-out;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
+  }
+
+  .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  .modal-title {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 600;
+  }
+
+  .modal-close-btn {
+    background: none;
+    border: none;
+    font-size: 2.25rem;
+    font-weight: 300;
+    line-height: 1;
+    cursor: pointer;
+    color: var(--text-secondary);
+    transition: color 0.2s;
+  }
+
+  .modal-close-btn:hover {
+      color: var(--text-primary);
+  }
+  
+  .modal-body p {
+      margin: 0 0 0.75rem 0;
+      line-height: 1.6;
+      color: var(--text-secondary);
+  }
+
+  .modal-body p strong {
+      color: var(--text-primary);
+      margin-right: 0.5rem;
+      font-weight: 600;
+  }
+  
+  .form-group {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 1rem;
+  }
+  .form-group label {
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+  }
+  .form-group input, .form-group textarea {
+    padding: 0.75rem;
+    border: 1px solid var(--border-color);
+    border-radius: 0.5rem;
+    font-size: 1rem;
+    font-family: inherit;
+  }
+
 
   .patient-info-grid {
       display: grid;
@@ -302,6 +394,12 @@ const allStyles = `
     background-color: var(--background-color);
     font-weight: 600;
   }
+  .data-table tbody tr {
+      transition: background-color 0.2s;
+  }
+  .data-table tbody tr:hover {
+      background-color: #f9fafb;
+  }
   
   .message-list {
       list-style: none;
@@ -318,7 +416,7 @@ const allStyles = `
       transition: background-color 0.2s;
   }
   .message-item:hover {
-      background-color: var(--background-color);
+      background-color: var(--unread-message-bg);
   }
   .message-item.unread {
       background-color: var(--unread-message-bg);
@@ -389,6 +487,11 @@ const allStyles = `
       display: flex;
       align-items: center;
       gap: 1rem;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  .stat-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
   }
   .stat-card-icon {
       padding: 0.75rem;
@@ -430,11 +533,12 @@ const allStyles = `
       text-decoration: none;
       color: var(--text-primary);
       background-color: var(--background-color);
-      transition: background-color 0.2s;
+      transition: background-color 0.2s, transform 0.2s ease;
       font-weight: 500;
   }
    .quick-actions-item a:hover {
        background-color: var(--border-color);
+       transform: translateX(3px);
    }
 
   @media (min-width: 1024px) {
@@ -474,6 +578,10 @@ const allStyles = `
         align-items: flex-start;
         gap: 0.5rem;
     }
+    .modal-content {
+      width: 95%;
+      padding: 1.5rem;
+    }
   }
 `;
 
@@ -493,11 +601,34 @@ const PlusIcon = (props) => (<svg xmlns="http://www.w3.org/2000/svg" width="24" 
 
 // --- Mock Data ---
 const patientData = { name: 'John Appleseed', dob: '1985-05-20', gender: 'Male', bloodType: 'O+', primaryDoctor: 'Dr. Evelyn Reed', insurance: 'Blue Cross Blue Shield', emergencyContact: { name: 'Jane Appleseed', relationship: 'Spouse', phone: '(555) 123-4568' } };
-const appointmentsData = [ { id: 1, date: '2025-10-15', time: '10:00 AM', doctor: 'Dr. Evelyn Reed', reason: 'Annual Checkup', status: 'Upcoming' }, { id: 2, date: '2025-09-01', time: '02:30 PM', doctor: 'Dr. Evelyn Reed', reason: 'Follow-up', status: 'Completed' }, { id: 3, date: '2025-08-15', time: '09:00 AM', doctor: 'Dr. Evelyn Reed', reason: 'Lab Work', status: 'Cancelled' }, { id: 3, date: '2025-07-20', time: '11:00 AM', doctor: 'Dr. Mark Johnson', reason: 'Cardiology Consult', status: 'Completed' } ];
+const appointmentsData = [ { id: 1, date: '2025-10-15', time: '10:00 AM', doctor: 'Dr. Evelyn Reed', reason: 'Annual Checkup', status: 'Upcoming' }, { id: 2, date: '2025-09-01', time: '02:30 PM', doctor: 'Dr. Evelyn Reed', reason: 'Follow-up', status: 'Completed' }, { id: 3, date: '2025-08-15', time: '09:00 AM', doctor: 'Dr. Evelyn Reed', reason: 'Lab Work', status: 'Cancelled' }, { id: 4, date: '2025-07-20', time: '11:00 AM', doctor: 'Dr. Mark Johnson', reason: 'Cardiology Consult', status: 'Completed' } ];
 const doctorsData = [ { id: 1, name: 'Dr. Evelyn Reed', specialty: 'General Practice', image: 'https://i.pravatar.cc/150?img=1', phone: '(555) 987-6543' }, { id: 2, name: 'Dr. Mark Johnson', specialty: 'Cardiology', image: 'https://i.pravatar.cc/150?img=2', phone: '(555) 987-6544' } ];
-const reportsData = [ { id: 1, name: 'Complete Blood Count', date: '2025-09-02', type: 'Lab Result', status: 'Ready' }, { id: 2, name: 'Lipid Panel', date: '2025-09-02', type: 'Lab Result', status: 'Ready' }, { id: 3, name: 'Chest X-Ray', date: '2025-07-21', type: 'Imaging', status: 'Ready' } ];
-const messagesData = [ { id: 1, sender: 'Dr. Evelyn Reed', subject: 'Your recent lab results', date: '2025-09-05', read: false, senderImg: 'https://i.pravatar.cc/150?img=1', snippet: "Hi John, your results are back and look good. I've added them to your reports tab." }, { id: 2, sender: 'ClinicPlus Notifications', subject: 'Appointment Reminder: Oct 15, 2025', date: '2025-10-01', read: true, senderImg: null, snippet: "This is a reminder for your upcoming appointment with Dr. Reed..." } ];
+const reportsData = [ 
+    { id: 1, name: 'Complete Blood Count', date: '2025-09-02', type: 'Lab Result', status: 'Ready', details: 'All values within normal ranges. Reviewed by Dr. Reed.' }, 
+    { id: 2, name: 'Lipid Panel', date: '2025-09-02', type: 'Lab Result', status: 'Ready', details: 'Total Cholesterol: 190 mg/dL. LDL: 110 mg/dL. HDL: 60 mg/dL.' }, 
+    { id: 3, name: 'Chest X-Ray', date: '2025-07-21', type: 'Imaging', status: 'Ready', details: 'No abnormalities detected. Lungs are clear.' } 
+];
+const messagesData = [ { id: 1, sender: 'Dr. Evelyn Reed', subject: 'Your recent lab results', date: '2025-09-05', read: false, senderImg: 'https://i.pravatar.cc/150?img=1', snippet: "Hi John, your results are back and look good. I've added them to your reports tab.", body: "Hi John, your recent lab results for the Complete Blood Count and Lipid Panel have been reviewed. Everything appears to be within the normal range. I've uploaded the detailed report to your portal under the 'My Reports' section for your records. Please feel free to schedule a follow-up if you have any questions. Best, Dr. Reed." }, { id: 2, sender: 'ClinicPlus Notifications', subject: 'Appointment Reminder: Oct 15, 2025', date: '2025-10-01', read: true, senderImg: null, snippet: "This is a reminder for your upcoming appointment with Dr. Reed...", body: "This is a reminder for your upcoming appointment with Dr. Evelyn Reed on October 15, 2025 at 10:00 AM for an Annual Checkup. Please arrive 15 minutes early for check-in. If you need to reschedule, please call our office at (555) 123-4567." } ];
 const prescriptionsData = [ { id: 1, name: 'Lisinopril', dosage: '10mg', frequency: 'Once a day', status: 'Active', refillsLeft: 2, prescribedBy: 'Dr. Evelyn Reed' }, { id: 2, name: 'Atorvastatin', dosage: '20mg', frequency: 'Once a day', status: 'Active', refillsLeft: 2, prescribedBy: 'Dr. Mark Johnson' }, { id: 3, name: 'Amoxicillin', dosage: '500mg', frequency: 'Three times a day', status: 'Expired', refillsLeft: 0, prescribedBy: 'Dr. Evelyn Reed' } ];
+
+// --- Reusable Components ---
+const Modal = ({ isOpen, onClose, title, children }) => {
+    if (!isOpen) return null;
+
+    return (
+        <div className="modal-overlay" onClick={onClose}>
+            <div className="modal-content" onClick={e => e.stopPropagation()}>
+                <div className="modal-header">
+                    <h3 className="modal-title">{title}</h3>
+                    <button onClick={onClose} className="modal-close-btn">&times;</button>
+                </div>
+                <div className="modal-body">
+                    {children}
+                </div>
+            </div>
+        </div>
+    );
+};
 
 // --- Page Components ---
 
@@ -565,9 +696,9 @@ const OverviewContent = () => {
                     <div className="card">
                          <h3 className="card-title">Quick Actions</h3>
                          <ul className="quick-actions-list">
-                            <li className="quick-actions-item"><a href="#"><PlusIcon width={20} height={20}/> Schedule Appointment</a></li>
-                            <li className="quick-actions-item"><a href="#"><PillIcon width={20} height={20}/> Request Refill</a></li>
-                            <li className="quick-actions-item"><a href="#"><FileTextIcon width={20} height={20}/> View Reports</a></li>
+                             <li className="quick-actions-item"><a href="#"><PlusIcon width={20} height={20}/> Schedule Appointment</a></li>
+                             <li className="quick-actions-item"><a href="#"><PillIcon width={20} height={20}/> Request Refill</a></li>
+                             <li className="quick-actions-item"><a href="#"><FileTextIcon width={20} height={20}/> View Reports</a></li>
                          </ul>
                     </div>
                     <div className="card">
@@ -593,11 +724,230 @@ const OverviewContent = () => {
     );
 };
 
-const AppointmentsContent = () => ( <div className="card"> <div className="card-header"><h2 className="card-title">My Appointments</h2><button className="btn">Schedule New</button></div> <div className="table-wrapper"> <table className="data-table"> <thead><tr><th>Date</th><th>Time</th><th>Doctor</th><th>Reason</th><th>Status</th><th>Action</th></tr></thead> <tbody> {appointmentsData.map(appt => ( <tr key={appt.id}> <td>{appt.date}</td><td>{appt.time}</td><td>{appt.doctor}</td><td>{appt.reason}</td><td>{appt.status}</td><td><button className="btn btn-secondary">Details</button></td> </tr> ))} </tbody> </table> </div> </div> );
-const MyDoctorsContent = () => ( <div className="card"> <div className="card-header"><h2 className="card-title">My Doctors</h2></div> <div className="table-wrapper"> <table className="data-table"> <thead><tr><th>Photo</th><th>Name</th><th>Specialty</th><th>Contact</th><th>Action</th></tr></thead> <tbody> {doctorsData.map(doc => ( <tr key={doc.id}> <td><img src={doc.image} alt={doc.name} style={{width: '40px', height: '40px', borderRadius: '50%'}}/></td> <td>{doc.name}</td><td>{doc.specialty}</td><td>{doc.phone}</td><td><button className="btn btn-secondary">Send Message</button></td></tr> ))} </tbody> </table> </div> </div> );
-const MyProfileContent = () => ( <div className="card"> <div className="card-header"><h2 className="card-title">My Profile</h2><button className="btn">Edit Profile</button></div> <div className="patient-info-grid"> <div className="info-item"><span className="label">Full Name</span><span className="value">{patientData.name}</span></div> <div className="info-item"><span className="label">Date of Birth</span><span className="value">{patientData.dob}</span></div> <div className="info-item"><span className="label">Gender</span><span className="value">{patientData.gender}</span></div> <div className="info-item"><span className="label">Blood Type</span><span className="value">{patientData.bloodType}</span></div> <div className="info-item"><span className="label">Primary Care Physician</span><span className="value">{patientData.primaryDoctor}</span></div> <div className="info-item"><span className="label">Insurance Provider</span><span className="value">{patientData.insurance}</span></div> </div> <div className="section-divider"><h3 className="card-title" style={{marginBottom: '1rem'}}>Emergency Contact</h3><div className="patient-info-grid"><div className="info-item"><span className="label">Name</span><span className="value">{patientData.emergencyContact.name}</span></div><div className="info-item"><span className="label">Relationship</span><span className="value">{patientData.emergencyContact.relationship}</span></div><div className="info-item"><span className="label">Phone</span><span className="value">{patientData.emergencyContact.phone}</span></div></div></div></div> );
-const MyReportsContent = () => ( <div className="card"> <div className="card-header"><h2 className="card-title">My Reports</h2></div> <div className="table-wrapper"> <table className="data-table"> <thead><tr><th>Report Name</th><th>Type</th><th>Date</th><th>Status</th><th>Action</th></tr></thead> <tbody> {reportsData.map(report => ( <tr key={report.id}> <td>{report.name}</td><td>{report.type}</td><td>{report.date}</td><td>{report.status}</td><td><button className="btn btn-secondary">View</button></td> </tr> ))} </tbody> </table> </div> </div> );
-const MessagesContent = () => ( <div className="card"> <div className="card-header"><h2 className="card-title">Messages</h2><button className="btn">New Message</button></div> <ul className="message-list"> {messagesData.map(msg => ( <li key={msg.id} className={`message-item ${!msg.read ? 'unread' : ''}`}> <div className="message-details"> {msg.senderImg ? <img src={msg.senderImg} alt={msg.sender} className="message-sender-avatar"/> : <div style={{width: 40, height: 40, borderRadius: '50%', backgroundColor: '#ddd', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', flexShrink: 0}}>{msg.sender.charAt(0)}</div>} <div className="message-content"> <p className="message-subject">{msg.subject}</p> <p className="message-snippet">{msg.snippet}</p> </div> </div> <span className="message-date">{msg.date}</span> </li> ))} </ul> </div> );
+const AppointmentsContent = () => {
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [selectedAppt, setSelectedAppt] = useState(null);
+
+    const openModal = (appt) => {
+        setSelectedAppt(appt);
+        setIsModalOpen(true);
+    };
+
+    return (
+        <>
+            <div className="card">
+                <div className="card-header"><h2 className="card-title">My Appointments</h2><button className="btn">Schedule New</button></div>
+                <div className="table-wrapper">
+                    <table className="data-table">
+                        <thead><tr><th>Date</th><th>Time</th><th>Doctor</th><th>Reason</th><th>Status</th><th>Action</th></tr></thead>
+                        <tbody>
+                            {appointmentsData.map(appt => (
+                                <tr key={appt.id}>
+                                    <td>{appt.date}</td><td>{appt.time}</td><td>{appt.doctor}</td><td>{appt.reason}</td><td>{appt.status}</td>
+                                    <td><button onClick={() => openModal(appt)} className="btn btn-secondary">Details</button></td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="Appointment Details">
+                {selectedAppt && (
+                    <div>
+                        <p><strong>Date:</strong> {selectedAppt.date} at {selectedAppt.time}</p>
+                        <p><strong>Doctor:</strong> {selectedAppt.doctor}</p>
+                        <p><strong>Reason for Visit:</strong> {selectedAppt.reason}</p>
+                        <p><strong>Status:</strong> {selectedAppt.status}</p>
+                    </div>
+                )}
+            </Modal>
+        </>
+    );
+};
+
+const MyDoctorsContent = () => {
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [selectedDoctor, setSelectedDoctor] = useState(null);
+
+    const openModal = (doc) => {
+        setSelectedDoctor(doc);
+        setIsModalOpen(true);
+    };
+    
+    return (
+        <>
+        <div className="card">
+            <div className="card-header"><h2 className="card-title">My Doctors</h2></div>
+            <div className="table-wrapper">
+                <table className="data-table">
+                    <thead><tr><th>Photo</th><th>Name</th><th>Specialty</th><th>Contact</th><th>Action</th></tr></thead>
+                    <tbody>
+                        {doctorsData.map(doc => (
+                            <tr key={doc.id}>
+                                <td><img src={doc.image} alt={doc.name} style={{width: '40px', height: '40px', borderRadius: '50%'}}/></td>
+                                <td>{doc.name}</td><td>{doc.specialty}</td><td>{doc.phone}</td>
+                                <td><button onClick={() => openModal(doc)} className="btn btn-secondary">Send Message</button></td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title={`Message ${selectedDoctor?.name}`}>
+            <form onSubmit={e => e.preventDefault()}>
+                <div className="form-group">
+                    <label htmlFor="subject">Subject</label>
+                    <input type="text" id="subject" defaultValue={`Question for ${selectedDoctor?.name}`} />
+                </div>
+                <div className="form-group">
+                    <label htmlFor="message">Message</label>
+                    <textarea id="message" rows="5"></textarea>
+                </div>
+                <button type="submit" className="btn">Send</button>
+            </form>
+        </Modal>
+        </>
+    );
+};
+const MyProfileContent = () => {
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    
+    return(
+        <>
+        <div className="card">
+            <div className="card-header"><h2 className="card-title">My Profile</h2><button onClick={() => setIsModalOpen(true)} className="btn">Edit Profile</button></div>
+            <div className="patient-info-grid">
+                <div className="info-item"><span className="label">Full Name</span><span className="value">{patientData.name}</span></div>
+                <div className="info-item"><span className="label">Date of Birth</span><span className="value">{patientData.dob}</span></div>
+                <div className="info-item"><span className="label">Gender</span><span className="value">{patientData.gender}</span></div>
+                <div className="info-item"><span className="label">Blood Type</span><span className="value">{patientData.bloodType}</span></div>
+                <div className="info-item"><span className="label">Primary Care Physician</span><span className="value">{patientData.primaryDoctor}</span></div>
+                <div className="info-item"><span className="label">Insurance Provider</span><span className="value">{patientData.insurance}</span></div>
+            </div>
+            <div className="section-divider">
+                <h3 className="card-title" style={{marginBottom: '1rem'}}>Emergency Contact</h3>
+                <div className="patient-info-grid">
+                    <div className="info-item"><span className="label">Name</span><span className="value">{patientData.emergencyContact.name}</span></div>
+                    <div className="info-item"><span className="label">Relationship</span><span className="value">{patientData.emergencyContact.relationship}</span></div>
+                    <div className="info-item"><span className="label">Phone</span><span className="value">{patientData.emergencyContact.phone}</span></div>
+                </div>
+            </div>
+        </div>
+         <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="Edit Profile">
+            <form onSubmit={e => e.preventDefault()}>
+                <div className="form-group">
+                    <label htmlFor="name">Full Name</label>
+                    <input type="text" id="name" defaultValue={patientData.name} />
+                </div>
+                 <div className="form-group">
+                    <label htmlFor="phone">Emergency Contact Phone</label>
+                    <input type="tel" id="phone" defaultValue={patientData.emergencyContact.phone} />
+                </div>
+                <button type="submit" className="btn">Save Changes</button>
+            </form>
+        </Modal>
+        </>
+    );
+};
+const MyReportsContent = () => {
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [selectedReport, setSelectedReport] = useState(null);
+
+    const openModal = (report) => {
+        setSelectedReport(report);
+        setIsModalOpen(true);
+    };
+
+    return (
+        <>
+            <div className="card">
+                <div className="card-header"><h2 className="card-title">My Reports</h2></div>
+                <div className="table-wrapper">
+                    <table className="data-table">
+                        <thead><tr><th>Report Name</th><th>Type</th><th>Date</th><th>Status</th><th>Action</th></tr></thead>
+                        <tbody>
+                            {reportsData.map(report => (
+                                <tr key={report.id}>
+                                    <td>{report.name}</td><td>{report.type}</td><td>{report.date}</td><td>{report.status}</td>
+                                    <td><button onClick={() => openModal(report)} className="btn btn-secondary">View</button></td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title={selectedReport?.name}>
+                {selectedReport && (
+                    <div>
+                        <p><strong>Date:</strong> {selectedReport.date}</p>
+                        <p><strong>Type:</strong> {selectedReport.type}</p>
+                        <hr style={{margin: '1rem 0', border: 'none', borderTop: '1px solid var(--border-color)'}} />
+                        <p><strong>Details:</strong></p>
+                        <p>{selectedReport.details}</p>
+                    </div>
+                )}
+            </Modal>
+        </>
+    );
+};
+
+const MessagesContent = () => {
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [selectedMessage, setSelectedMessage] = useState(null);
+
+    const openModal = (msg) => {
+        setSelectedMessage(msg);
+        setIsModalOpen(true);
+    };
+
+    return(
+        <>
+            <div className="card">
+                <div className="card-header"><h2 className="card-title">Messages</h2><button onClick={() => openModal('new')} className="btn">New Message</button></div>
+                <ul className="message-list">
+                    {messagesData.map(msg => (
+                        <li key={msg.id} onClick={() => openModal(msg)} className={`message-item ${!msg.read ? 'unread' : ''}`}>
+                            <div className="message-details">
+                                {msg.senderImg ? <img src={msg.senderImg} alt={msg.sender} className="message-sender-avatar"/> : <div style={{width: 40, height: 40, borderRadius: '50%', backgroundColor: '#ddd', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', flexShrink: 0}}>{msg.sender.charAt(0)}</div>}
+                                <div className="message-content">
+                                    <p className="message-subject">{msg.subject}</p>
+                                    <p className="message-snippet">{msg.snippet}</p>
+                                </div>
+                            </div>
+                            <span className="message-date">{msg.date}</span>
+                        </li>
+                    ))}
+                </ul>
+            </div>
+            <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title={selectedMessage === 'new' ? 'New Message' : selectedMessage?.subject}>
+                {selectedMessage === 'new' ? (
+                     <form onSubmit={e => e.preventDefault()}>
+                        <div className="form-group">
+                            <label htmlFor="recipient">To</label>
+                            <input type="text" id="recipient" defaultValue="Dr. Evelyn Reed" />
+                        </div>
+                        <div className="form-group">
+                            <label htmlFor="msg-subject">Subject</label>
+                            <input type="text" id="msg-subject" />
+                        </div>
+                        <div className="form-group">
+                            <label htmlFor="msg-body">Message</label>
+                            <textarea id="msg-body" rows="5"></textarea>
+                        </div>
+                        <button type="submit" className="btn">Send</button>
+                    </form>
+                ) : (
+                    <div>
+                        <p><strong>From:</strong> {selectedMessage?.sender}</p>
+                        <p><strong>Date:</strong> {selectedMessage?.date}</p>
+                        <hr style={{margin: '1rem 0', border: 'none', borderTop: '1px solid var(--border-color)'}} />
+                        <p>{selectedMessage?.body}</p>
+                    </div>
+                )}
+            </Modal>
+        </>
+    );
+};
 const PrescriptionsContent = () => ( <div className="card"> <div className="card-header"><h2 className="card-title">My Prescriptions</h2><button className="btn">Request Refill</button></div> <div className="table-wrapper"> <table className="data-table"> <thead><tr><th>Medication</th><th>Dosage</th><th>Frequency</th><th>Prescribed By</th><th>Status</th><th>Refills Left</th></tr></thead> <tbody> {prescriptionsData.map(rx => ( <tr key={rx.id}> <td>{rx.name}</td><td>{rx.dosage}</td><td>{rx.frequency}</td><td>{rx.prescribedBy}</td><td>{rx.status}</td><td>{rx.refillsLeft}</td> </tr> ))} </tbody> </table> </div> </div> );
 
 // --- Main App Component ---

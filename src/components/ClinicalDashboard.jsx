@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 // --- CSS Styles ---
 const allStyles = `
@@ -6,6 +6,7 @@ const allStyles = `
     --primary-color: #3b82f6;
     --primary-dark: #2563eb;
     --secondary-color: #10b981;
+    --secondary-dark: #059669;
     --background-color: #f3f4f6;
     --card-background: #ffffff;
     --text-primary: #1f2937;
@@ -103,7 +104,7 @@ const allStyles = `
     flex-grow: 1;
     display: flex;
     flex-direction: column;
-    overflow-y: auto; /* Changed from hidden to auto */
+    overflow-y: auto;
   }
 
   .header {
@@ -113,6 +114,9 @@ const allStyles = `
     display: flex;
     justify-content: space-between;
     align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 99;
   }
   
   .header-main {
@@ -153,6 +157,10 @@ const allStyles = `
     transition: background-color 0.2s, color 0.2s;
     color: var(--text-secondary);
   }
+
+  .role-switcher button:not(.active):hover {
+    background-color: #e5e7eb;
+  }
   
   .role-switcher button.active {
     background-color: var(--card-background);
@@ -165,30 +173,12 @@ const allStyles = `
     flex-grow: 1;
   }
 
-  .grid {
-    display: grid;
-    gap: 1.5rem;
-  }
-
-  .grid-cols-4 {
-    grid-template-columns: repeat(4, 1fr);
-  }
-  
-  .grid-cols-3 {
-    grid-template-columns: repeat(3, 1fr);
-  }
-  
-  .grid-cols-2 {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
-  .col-span-2 {
-    grid-column: span 2 / span 2;
-  }
-  
-  .col-span-3 {
-    grid-column: span 3 / span 3;
-  }
+  .grid { display: grid; gap: 1.5rem; }
+  .grid-cols-4 { grid-template-columns: repeat(4, 1fr); }
+  .grid-cols-3 { grid-template-columns: repeat(3, 1fr); }
+  .grid-cols-2 { grid-template-columns: repeat(2, 1fr); }
+  .col-span-2 { grid-column: span 2 / span 2; }
+  .col-span-3 { grid-column: span 3 / span 3; }
 
   .card {
     background-color: var(--card-background);
@@ -212,44 +202,23 @@ const allStyles = `
     text-align: center;
   }
   
-  .stat-value {
-    font-size: 2.5rem;
-    font-weight: bold;
-    color: var(--primary-color);
-  }
-
-  .stat-label {
-    margin-top: 0.5rem;
-    font-size: 1rem;
-    color: var(--text-secondary);
-  }
-
-  .item-list {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-  }
+  .stat-value { font-size: 2.5rem; font-weight: bold; color: var(--primary-color); }
+  .stat-label { margin-top: 0.5rem; font-size: 1rem; color: var(--text-secondary); }
+  .item-list { list-style: none; padding: 0; margin: 0; }
 
   .item-list li {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 1rem 0;
+    padding: 1rem;
     border-bottom: 1px solid var(--border-color);
+    border-radius: 0.5rem;
+    transition: background-color 0.2s ease;
   }
-
-  .item-list li:last-child {
-    border-bottom: none;
-  }
-
-  .item-list .item-info {
-    font-weight: 500;
-  }
-
-  .item-list .item-meta {
-    font-size: 0.875rem;
-    color: var(--text-secondary);
-  }
+  .item-list li:hover { background-color: var(--background-color); }
+  .item-list li:last-child { border-bottom: none; }
+  .item-list .item-info { font-weight: 500; }
+  .item-list .item-meta { font-size: 0.875rem; color: var(--text-secondary); }
 
   .btn {
     padding: 0.5rem 1rem;
@@ -258,226 +227,90 @@ const allStyles = `
     text-decoration: none;
     border: 1px solid transparent;
     cursor: pointer;
+    transition: background-color 0.2s, transform 0.1s, box-shadow 0.2s;
   }
 
-  .btn-primary {
-    background-color: var(--primary-color);
-    color: white;
-  }
+  .btn:hover { transform: translateY(-2px); box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+  .btn:active { transform: translateY(-1px) scale(0.98); box-shadow: 0 2px 3px rgba(0,0,0,0.1); }
 
-  .btn-secondary {
-    background-color: var(--secondary-color);
-    color: white;
-  }
+  .btn-primary { background-color: var(--primary-color); color: white; }
+  .btn-primary:hover { background-color: var(--primary-dark); }
+  .btn-secondary { background-color: var(--secondary-color); color: white; }
+  .btn-secondary:hover { background-color: var(--secondary-dark); }
   
-  .tabs {
-    display: flex;
-    border-bottom: 1px solid var(--border-color);
-    margin-bottom: 1.5rem;
-    overflow-x: auto;
-  }
-  
-  .tab {
-    padding: 0.75rem 1.5rem;
-    cursor: pointer;
-    background-color: transparent;
-    border: none;
-    border-bottom: 2px solid transparent;
-    font-weight: 600;
-    color: var(--text-secondary);
-    margin-bottom: -1px; /* Align with bottom border */
-    white-space: nowrap;
-  }
-  
-  .tab.active {
-    color: var(--primary-color);
-    border-bottom: 2px solid var(--primary-color);
-  }
+  .tabs { display: flex; border-bottom: 1px solid var(--border-color); margin-bottom: 1.5rem; overflow-x: auto; }
+  .tab { padding: 0.75rem 1.5rem; cursor: pointer; background-color: transparent; border: none; border-bottom: 2px solid transparent; font-weight: 600; color: var(--text-secondary); margin-bottom: -1px; white-space: nowrap; transition: color 0.2s, border-color 0.2s; }
+  .tab:not(.active):hover { color: var(--primary-color); }
+  .tab.active { color: var(--primary-color); border-bottom: 2px solid var(--primary-color); }
 
-  .table-wrapper {
-    width: 100%;
-    overflow-x: auto;
-  }
+  .table-wrapper { width: 100%; overflow-x: auto; }
+  .data-table { width: 100%; border-collapse: collapse; margin-top: 1.5rem; }
+  .data-table th, .data-table td { padding: 0.75rem 1rem; text-align: left; border-bottom: 1px solid var(--border-color); white-space: nowrap; }
+  .data-table th { background-color: var(--background-color); font-weight: 600; }
+  .data-table tbody tr { transition: background-color 0.2s; }
+  .data-table tbody tr:hover { background-color: #f9fafb; }
 
-  .data-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 1.5rem;
-  }
-  .data-table th, .data-table td {
-    padding: 0.75rem 1rem;
-    text-align: left;
-    border-bottom: 1px solid var(--border-color);
-    white-space: nowrap;
-  }
-  .data-table th {
-    background-color: var(--background-color);
-    font-weight: 600;
-  }
-  .form-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 1.5rem;
-  }
-  .form-group {
-    display: flex;
-    flex-direction: column;
-  }
-  .form-group label {
-    font-weight: 500;
-    margin-bottom: 0.5rem;
-  }
-  .form-group input {
-    padding: 0.75rem;
-    border: 1px solid var(--border-color);
-    border-radius: 0.5rem;
-  }
+  .form-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; }
+  .form-group { display: flex; flex-direction: column; }
+  .form-group label { font-weight: 500; margin-bottom: 0.5rem; }
+  .form-group input, .form-group select { padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 0.5rem; }
 
-  .status-badge {
-    padding: 0.25rem 0.75rem;
-    border-radius: 9999px;
-    font-weight: 600;
-    font-size: 0.75rem;
-  }
+  .status-badge { padding: 0.25rem 0.75rem; border-radius: 9999px; font-weight: 600; font-size: 0.75rem; }
   .status-paid { background-color: var(--status-paid-bg); color: var(--status-paid-text); }
   .status-pending { background-color: var(--status-pending-bg); color: var(--status-pending-text); }
   .status-denied { background-color: var(--status-denied-bg); color: var(--status-denied-text); }
   
-  .calendar-grid {
-    display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    gap: 1px;
-    background-color: var(--border-color);
-    border: 1px solid var(--border-color);
-  }
-  .calendar-day {
-    background-color: var(--card-background);
-    padding: 0.5rem;
-  }
-  .calendar-day-header {
-    text-align: center;
-    font-weight: 600;
-    padding-bottom: 0.5rem;
-    border-bottom: 1px solid var(--border-color);
-  }
-  .calendar-appointments {
-    min-height: 400px;
-  }
-  .calendar-appointment {
-    background-color: #eef2ff;
-    border-left: 3px solid var(--primary-color);
-    padding: 0.5rem;
-    border-radius: 0.25rem;
-    margin-top: 0.5rem;
-  }
+  .calendar-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 1px; background-color: var(--border-color); border: 1px solid var(--border-color); }
+  .calendar-day { background-color: var(--card-background); padding: 0.5rem; }
+  .calendar-day-header { text-align: center; font-weight: 600; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border-color); }
+  .calendar-appointments { min-height: 400px; }
+  .calendar-appointment { background-color: #eef2ff; border-left: 3px solid var(--primary-color); padding: 0.5rem; border-radius: 0.25rem; margin-top: 0.5rem; }
   .calendar-appointment p { margin: 0; }
   .calendar-appointment .time { font-weight: bold; }
   .calendar-appointment .patient { font-size: 0.875rem; }
 
-  .sidebar-contact {
-    margin-top: 1.5rem;
-    padding-top: 1.5rem;
-    border-top: 1px solid rgba(209, 213, 219, 0.2);
-    text-align: center;
-    font-size: 0.875rem;
-  }
-  .contact-title {
-    font-weight: 600;
-    margin: 0 0 0.5rem 0;
-    color: white;
-  }
-  .contact-info {
-    margin: 0.25rem 0;
-    color: var(--sidebar-text);
-  }
+  .sidebar-contact { margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid rgba(209, 213, 219, 0.2); text-align: center; font-size: 0.875rem; }
+  .contact-title { font-weight: 600; margin: 0 0 0.5rem 0; color: white; }
+  .contact-info { margin: 0.25rem 0; color: var(--sidebar-text); }
 
-  .overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background-color: rgba(0,0,0,0.5);
-      z-index: 999;
-      opacity: 0;
-      visibility: hidden;
-      transition: opacity 0.3s ease, visibility 0.3s ease;
-  }
+  .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); z-index: 999; opacity: 0; visibility: hidden; transition: opacity 0.3s ease, visibility 0.3s ease; }
+  .overlay.visible { opacity: 1; visibility: visible; }
 
-  .overlay.visible {
-      opacity: 1;
-      visibility: visible;
-  }
+  /* --- Modal Styles --- */
+  .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.6); display: flex; justify-content: center; align-items: center; z-index: 1050; opacity: 0; animation: fadeIn 0.3s forwards; }
+  .modal-content { background: white; padding: 2rem; border-radius: 0.75rem; box-shadow: 0 5px 15px rgba(0,0,0,0.3); width: 90%; max-width: 600px; position: relative; transform: translateY(-20px); animation: slideIn 0.3s forwards; }
+  .modal-close-btn { position: absolute; top: 1rem; right: 1rem; background: none; border: none; font-size: 1.75rem; cursor: pointer; color: var(--text-secondary); transition: color 0.2s; }
+  .modal-close-btn:hover { color: var(--text-primary); }
+  .modal-header { border-bottom: 1px solid var(--border-color); padding-bottom: 1rem; margin-bottom: 1rem; }
+  .modal-header h2 { margin: 0; }
+  .modal-body .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  .modal-body .detail-item { padding: 0.5rem; background-color: #f9fafb; border-radius: 0.5rem; }
+  .modal-body .detail-item strong { display: block; color: var(--text-secondary); font-size: 0.875rem; margin-bottom: 0.25rem; }
+  .modal-footer { border-top: 1px solid var(--border-color); padding-top: 1rem; margin-top: 1rem; display: flex; justify-content: flex-end; gap: 0.5rem; }
+
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes slideIn { from { opacity: 0; transform: translateY(-30px); } to { opacity: 1; transform: translateY(0); } }
 
   @media (max-width: 768px) {
-    .sidebar {
-        position: fixed;
-        top: 0;
-        left: 0;
-        height: 100%;
-        z-index: 1000;
-        transform: translateX(-100%);
-        box-shadow: 2px 0 10px rgba(0,0,0,0.1);
-    }
-    .sidebar.open {
-        transform: translateX(0);
-    }
-    .hamburger-btn {
-        display: block;
-    }
-
-    /* New Mobile Header Layout */
-    .header {
-      flex-wrap: wrap;
-      padding: 1rem;
-      gap: 0.5rem 1rem;
-    }
-    .header-main {
-       flex-grow: 1;
-    }
-    .role-switcher {
-      width: 100%;
-      order: 3;
-    }
-
-    .header h1 {
-        font-size: 1.25rem;
-    }
-    .content-area {
-        padding: 1rem;
-    }
-
-    /* New Mobile Grid Layout */
-    .grid-cols-4 {
-      grid-template-columns: repeat(2, 1fr);
-    }
-    .grid-cols-4 .col-span-2 {
-      grid-column: span 2 / span 2;
-    }
-    .grid-cols-3, .grid-cols-2 {
-      grid-template-columns: 1fr;
-    }
-    .col-span-3, .col-span-2 {
-      grid-column: span 1 / span 1;
-    }
-
-    .form-grid {
-        grid-template-columns: 1fr;
-    }
-    .role-switcher button {
-        flex-grow: 1;
-        padding: 0.5rem;
-    }
-    .stat-value {
-        font-size: 2rem;
-    }
-    
-    .calendar-grid {
-        display: block;
-    }
-    .calendar-day {
-        margin-bottom: 1rem;
-    }
+    .sidebar { position: fixed; top: 0; left: 0; height: 100%; z-index: 1000; transform: translateX(-100%); box-shadow: 2px 0 10px rgba(0,0,0,0.1); }
+    .sidebar.open { transform: translateX(0); }
+    .hamburger-btn { display: block; }
+    .header { flex-wrap: wrap; padding: 1rem; gap: 0.5rem 1rem; }
+    .header-main { flex-grow: 1; }
+    .role-switcher { width: 100%; order: 3; }
+    .header h1 { font-size: 1.25rem; }
+    .content-area { padding: 1rem; }
+    .grid-cols-4 { grid-template-columns: repeat(2, 1fr); }
+    .grid-cols-4 .col-span-2 { grid-column: span 2 / span 2; }
+    .grid-cols-3, .grid-cols-2 { grid-template-columns: 1fr; }
+    .col-span-3, .col-span-2 { grid-column: span 1 / span 1; }
+    .form-grid { grid-template-columns: 1fr; }
+    .role-switcher button { flex-grow: 1; padding: 0.5rem; }
+    .stat-value { font-size: 2rem; }
+    .calendar-grid { display: block; }
+    .calendar-day { margin-bottom: 1rem; }
+    .modal-content { width: 95%; padding: 1.5rem; }
+    .modal-body .detail-grid { grid-template-columns: 1fr; }
   }
 `;
 
@@ -490,10 +323,10 @@ const userManagementData = [
 ];
 
 const claimsManagementData = [
-    { id: 'C5821', patient: 'John Appleseed', insurer: 'Blue Cross', amount: 150.00, submitted: '2025-10-01', status: 'Pending' },
-    { id: 'C5820', patient: 'Jane Doe', insurer: 'Aetna', amount: 225.50, submitted: '2025-09-28', status: 'Paid' },
-    { id: 'C5819', patient: 'Peter Jones', insurer: 'Cigna', amount: 75.00, submitted: '2025-09-25', status: 'Paid' },
-    { id: 'C5818', patient: 'Alice Williams', insurer: 'Blue Cross', amount: 310.00, submitted: '2025-09-22', status: 'Denied' },
+    { id: 'C5821', patient: 'John Appleseed', insurer: 'Blue Cross', amount: 150.00, submitted: '2025-10-01', status: 'Pending', serviceDate: '2025-09-25', serviceCode: '99213', diagnosisCode: 'R51' },
+    { id: 'C5820', patient: 'Jane Doe', insurer: 'Aetna', amount: 225.50, submitted: '2025-09-28', status: 'Paid', serviceDate: '2025-09-22', serviceCode: '99204', diagnosisCode: 'M54.5' },
+    { id: 'C5819', patient: 'Peter Jones', insurer: 'Cigna', amount: 75.00, submitted: '2025-09-25', status: 'Paid', serviceDate: '2025-09-18', serviceCode: '99212', diagnosisCode: 'J02.9' },
+    { id: 'C5818', patient: 'Alice Williams', insurer: 'Blue Cross', amount: 310.00, submitted: '2025-09-22', status: 'Denied', serviceDate: '2025-09-15', serviceCode: '99396', diagnosisCode: 'Z00.00', denialReason: 'Service not covered' },
 ];
 
 const masterCalendarEventsData = {
@@ -505,9 +338,9 @@ const masterCalendarEventsData = {
 };
 
 const doctorPatientListData = [
-  { id: 101, name: 'John Appleseed', dob: '1985-05-20', lastVisit: '2025-10-01' },
-  { id: 102, name: 'Jane Doe', dob: '1992-11-15', lastVisit: '2025-09-18' },
-  { id: 103, name: 'Peter Jones', dob: '1978-03-10', lastVisit: '2025-08-22' },
+  { id: 101, name: 'John Appleseed', dob: '1985-05-20', lastVisit: '2025-10-01', chartSummary: 'Patient is in good health. Discussed importance of regular exercise.' },
+  { id: 102, name: 'Jane Doe', dob: '1992-11-15', lastVisit: '2025-09-18', chartSummary: 'Follow-up on seasonal allergies. Prescription for antihistamines provided.' },
+  { id: 103, name: 'Peter Jones', dob: '1978-03-10', lastVisit: '2025-08-22', chartSummary: 'Routine check-up. All vitals are normal.' },
 ];
 
 const doctorMessagesData = [
@@ -534,103 +367,174 @@ const recentRegistrationsData = [
     { name: 'Charlie Davis', date: '2025-10-06' },
 ]
 
+// --- Reusable Modal Component ---
+const Modal = ({ isOpen, onClose, children }) => {
+    if (!isOpen) return null;
+    return (
+        <div className="modal-overlay" onClick={onClose}>
+            <div className="modal-content" onClick={e => e.stopPropagation()}>
+                <button className="modal-close-btn" onClick={onClose}>&times;</button>
+                {children}
+            </div>
+        </div>
+    );
+};
+
 // --- Icon Component ---
 const MenuIcon = (props) => (
     <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <line x1="3" y1="12" x2="21" y2="12"></line>
-        <line x1="3" y1="6" x2="21" y2="6"></line>
-        <line x1="3" y1="18" x2="21" y2="18"></line>
+        <line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line>
     </svg>
 );
 
-
 // --- Components for Each Role's Tabs ---
-const AdminOverviewTab = () => (
-    <div className="grid grid-cols-4">
-        <div className="card stat-card"><div className="stat-value">23</div><div className="stat-label">New Patients (Month)</div></div>
-        <div className="card stat-card"><div className="stat-value">45</div><div className="stat-label">Appointments Today</div></div>
-        <div className="card stat-card"><div className="stat-value">12</div><div className="stat-label">Pending Claims</div></div>
-        <div className="card stat-card"><div className="stat-value">$15.2k</div><div className="stat-label">Revenue (Week)</div></div>
+const AdminOverviewTab = () => {
+    const [modalInfo, setModalInfo] = useState({ isOpen: false, title: '', content: '', action: '' });
 
-        <div className="card col-span-2">
-            <h3 className="card-title">Recent Patient Registrations</h3>
-            <ul className="item-list">
-                {recentRegistrationsData.map(patient => (
-                    <li key={patient.name}>
-                        <div><p className="item-info">{patient.name}</p></div>
-                        <span className="item-meta">{patient.date}</span>
-                    </li>
-                ))}
-            </ul>
-        </div>
-        <div className="card col-span-2">
-            <h3 className="card-title">Today's High-Priority Tasks</h3>
-            <ul className="item-list">
-                <li><div><p className="item-info">Follow up on pending claim #5821</p></div><button className="btn btn-primary">View</button></li>
-                <li><div><p className="item-info">Confirm Dr. Reed's schedule for tomorrow</p></div><button className="btn btn-primary">Confirm</button></li>
-                <li><div><p className="item-info">Order new supplies for Room 3</p></div><button className="btn btn-primary">Order</button></li>
-            </ul>
-        </div>
-    </div>
-);
+    const tasks = [
+        { id: 1, text: 'Follow up on pending claim #5821', action: 'View', modalTitle: 'Claim #5821 Details', modalContent: 'Showing details for pending claim C5821 for John Appleseed. Amount: $150.00' },
+        { id: 2, text: 'Confirm Dr. Reed\'s schedule for tomorrow', action: 'Confirm', modalTitle: 'Confirm Schedule', modalContent: 'Are you sure you want to confirm Dr. Reed\'s schedule for tomorrow?' },
+        { id: 3, text: 'Order new supplies for Room 3', action: 'Order', modalTitle: 'Order Supplies', modalContent: 'Proceed to the supply ordering page for Room 3?' }
+    ];
 
+    const handleTaskClick = (task) => {
+        setModalInfo({ isOpen: true, title: task.modalTitle, content: task.modalContent, action: task.action });
+    };
 
-const UserManagementTab = () => (
-    <div className="card">
-        <h3 className="card-title">All Users</h3>
-        <div className="table-wrapper">
-            <table className="data-table">
-                <thead>
-                    <tr><th>Name</th><th>Role</th><th>Email</th><th>Status</th><th>Actions</th></tr>
-                </thead>
-                <tbody>
-                    {userManagementData.map(user => (
-                        <tr key={user.id}>
-                            <td>{user.name}</td>
-                            <td>{user.role}</td>
-                            <td>{user.email}</td>
-                            <td>{user.status}</td>
-                            <td><button className="btn btn-primary">Edit</button></td>
-                        </tr>
-                    ))}
-                </tbody>
-            </table>
-        </div>
-    </div>
-);
-
-const InsuranceClaimsTab = () => {
-    const getStatusClass = (status) => {
-        if (status === 'Paid') return 'status-paid';
-        if (status === 'Pending') return 'status-pending';
-        if (status === 'Denied') return 'status-denied';
-        return '';
+    const closeModal = () => {
+        setModalInfo({ isOpen: false, title: '', content: '', action: '' });
     };
 
     return (
-        <div className="card">
-            <h3 className="card-title">Insurance Claims Management</h3>
-             <div className="table-wrapper">
-                <table className="data-table">
-                    <thead>
-                        <tr><th>Claim ID</th><th>Patient</th><th>Insurer</th><th>Amount</th><th>Submitted</th><th>Status</th><th>Actions</th></tr>
-                    </thead>
-                    <tbody>
-                        {claimsManagementData.map(claim => (
-                            <tr key={claim.id}>
-                                <td>{claim.id}</td>
-                                <td>{claim.patient}</td>
-                                <td>{claim.insurer}</td>
-                                <td>${claim.amount.toFixed(2)}</td>
-                                <td>{claim.submitted}</td>
-                                <td><span className={`status-badge ${getStatusClass(claim.status)}`}>{claim.status}</span></td>
-                                <td><button className="btn btn-primary">View Details</button></td>
-                            </tr>
+        <>
+            <div className="grid grid-cols-4">
+                <div className="card stat-card"><div className="stat-value">23</div><div className="stat-label">New Patients (Month)</div></div>
+                <div className="card stat-card"><div className="stat-value">45</div><div className="stat-label">Appointments Today</div></div>
+                <div className="card stat-card"><div className="stat-value">12</div><div className="stat-label">Pending Claims</div></div>
+                <div className="card stat-card"><div className="stat-value">$15.2k</div><div className="stat-label">Revenue (Week)</div></div>
+                <div className="card col-span-2">
+                    <h3 className="card-title">Recent Patient Registrations</h3>
+                    <ul className="item-list">
+                        {recentRegistrationsData.map(patient => (<li key={patient.name}><div><p className="item-info">{patient.name}</p></div><span className="item-meta">{patient.date}</span></li>))}
+                    </ul>
+                </div>
+                <div className="card col-span-2">
+                    <h3 className="card-title">Today's High-Priority Tasks</h3>
+                    <ul className="item-list">
+                        {tasks.map(task => (
+                            <li key={task.id}>
+                                <div><p className="item-info">{task.text}</p></div>
+                                <button className="btn btn-primary" onClick={() => handleTaskClick(task)}>{task.action}</button>
+                            </li>
                         ))}
-                    </tbody>
-                </table>
+                    </ul>
+                </div>
             </div>
-        </div>
+            <Modal isOpen={modalInfo.isOpen} onClose={closeModal}>
+                <div className="modal-header"><h2>{modalInfo.title}</h2></div>
+                <div className="modal-body"><p>{modalInfo.content}</p></div>
+                <div className="modal-footer">
+                    <button className="btn btn-secondary" onClick={closeModal}>Cancel</button>
+                    <button className="btn btn-primary" onClick={closeModal}>{modalInfo.action}</button>
+                </div>
+            </Modal>
+        </>
+    );
+};
+
+const UserManagementTab = () => {
+    const [editingUser, setEditingUser] = useState(null);
+    return (
+        <>
+            <div className="card">
+                <h3 className="card-title">All Users</h3>
+                <div className="table-wrapper">
+                    <table className="data-table">
+                        <thead><tr><th>Name</th><th>Role</th><th>Email</th><th>Status</th><th>Actions</th></tr></thead>
+                        <tbody>
+                            {userManagementData.map(user => (
+                                <tr key={user.id}>
+                                    <td>{user.name}</td><td>{user.role}</td><td>{user.email}</td><td>{user.status}</td>
+                                    <td><button className="btn btn-primary" onClick={() => setEditingUser(user)}>Edit</button></td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <Modal isOpen={!!editingUser} onClose={() => setEditingUser(null)}>
+                {editingUser && (
+                    <>
+                        <div className="modal-header"><h2>Edit User: {editingUser.name}</h2></div>
+                        <div className="modal-body">
+                            <form>
+                                <div className="form-grid">
+                                    <div className="form-group"><label htmlFor="name">Full Name</label><input type="text" id="name" defaultValue={editingUser.name} /></div>
+                                    <div className="form-group"><label htmlFor="email">Email</label><input type="email" id="email" defaultValue={editingUser.email} /></div>
+                                    <div className="form-group"><label htmlFor="role">Role</label><input type="text" id="role" defaultValue={editingUser.role} /></div>
+                                    <div className="form-group"><label htmlFor="status">Status</label>
+                                        <select id="status" defaultValue={editingUser.status}><option>Active</option><option>Inactive</option></select>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                        <div className="modal-footer"><button className="btn btn-secondary" onClick={() => setEditingUser(null)}>Cancel</button><button className="btn btn-primary" onClick={() => setEditingUser(null)}>Save Changes</button></div>
+                    </>
+                )}
+            </Modal>
+        </>
+    );
+};
+
+const InsuranceClaimsTab = () => {
+    const [selectedClaim, setSelectedClaim] = useState(null);
+    const getStatusClass = (status) => {
+        if (status === 'Paid') return 'status-paid'; if (status === 'Pending') return 'status-pending'; if (status === 'Denied') return 'status-denied'; return '';
+    };
+    return (
+        <>
+            <div className="card">
+                <h3 className="card-title">Insurance Claims Management</h3>
+                <div className="table-wrapper">
+                    <table className="data-table">
+                        <thead><tr><th>Claim ID</th><th>Patient</th><th>Insurer</th><th>Amount</th><th>Submitted</th><th>Status</th><th>Actions</th></tr></thead>
+                        <tbody>
+                            {claimsManagementData.map(claim => (
+                                <tr key={claim.id}>
+                                    <td>{claim.id}</td><td>{claim.patient}</td><td>{claim.insurer}</td><td>${claim.amount.toFixed(2)}</td><td>{claim.submitted}</td>
+                                    <td><span className={`status-badge ${getStatusClass(claim.status)}`}>{claim.status}</span></td>
+                                    <td><button className="btn btn-primary" onClick={() => setSelectedClaim(claim)}>View Details</button></td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <Modal isOpen={!!selectedClaim} onClose={() => setSelectedClaim(null)}>
+                {selectedClaim && (
+                    <>
+                        <div className="modal-header"><h2>Claim Details: {selectedClaim.id}</h2></div>
+                        <div className="modal-body">
+                            <div className="detail-grid">
+                                <div className="detail-item"><strong>Patient</strong> {selectedClaim.patient}</div>
+                                <div className="detail-item"><strong>Insurer</strong> {selectedClaim.insurer}</div>
+                                <div className="detail-item"><strong>Amount</strong> ${selectedClaim.amount.toFixed(2)}</div>
+                                <div className="detail-item"><strong>Status</strong> <span className={`status-badge ${getStatusClass(selectedClaim.status)}`}>{selectedClaim.status}</span></div>
+                                <div className="detail-item"><strong>Date Submitted</strong> {selectedClaim.submitted}</div>
+                                <div className="detail-item"><strong>Date of Service</strong> {selectedClaim.serviceDate}</div>
+                                <div className="detail-item"><strong>Service Code</strong> {selectedClaim.serviceCode}</div>
+                                <div className="detail-item"><strong>Diagnosis Code</strong> {selectedClaim.diagnosisCode}</div>
+                            </div>
+                            {selectedClaim.status === 'Denied' && (
+                                <div className="detail-item" style={{gridColumn: 'span 2', marginTop: '1rem', backgroundColor: 'var(--status-denied-bg)', color: 'var(--status-denied-text)'}}>
+                                    <strong>Denial Reason</strong> {selectedClaim.denialReason || 'N/A'}
+                                </div>
+                            )}
+                        </div>
+                    </>
+                )}
+            </Modal>
+        </>
     );
 };
 
@@ -642,13 +546,7 @@ const MasterCalendarTab = () => (
                 <div key={day} className="calendar-day">
                     <div className="calendar-day-header">{day}</div>
                     <div className="calendar-appointments">
-                        {masterCalendarEventsData[day].map(appt => (
-                            <div key={appt.time} className="calendar-appointment">
-                                <p className="time">{appt.time}</p>
-                                <p className="patient">{appt.patient}</p>
-                                <p className="item-meta">{appt.doctor}</p>
-                            </div>
-                        ))}
+                        {masterCalendarEventsData[day].map(appt => (<div key={appt.time} className="calendar-appointment"><p className="time">{appt.time}</p><p className="patient">{appt.patient}</p><p className="item-meta">{appt.doctor}</p></div>))}
                     </div>
                 </div>
             ))}
@@ -656,288 +554,251 @@ const MasterCalendarTab = () => (
     </div>
 );
 
-const DoctorPatientsTab = () => (
-    <div className="card">
-        <h3 className="card-title">My Patients</h3>
-        <div className="table-wrapper">
-            <table className="data-table">
-                <thead>
-                    <tr><th>Name</th><th>Date of Birth</th><th>Last Visit</th><th>Actions</th></tr>
-                </thead>
-                <tbody>
-                    {doctorPatientListData.map(patient => (
-                        <tr key={patient.id}>
-                            <td>{patient.name}</td>
-                            <td>{patient.dob}</td>
-                            <td>{patient.lastVisit}</td>
-                            <td><button className="btn btn-primary">Open Chart</button></td>
-                        </tr>
-                    ))}
-                </tbody>
-            </table>
-        </div>
-    </div>
-);
+const DoctorPatientsTab = () => {
+    const [viewingPatient, setViewingPatient] = useState(null);
+    return(
+        <>
+            <div className="card">
+                <h3 className="card-title">My Patients</h3>
+                <div className="table-wrapper">
+                    <table className="data-table">
+                        <thead><tr><th>Name</th><th>Date of Birth</th><th>Last Visit</th><th>Actions</th></tr></thead>
+                        <tbody>
+                            {doctorPatientListData.map(patient => (
+                                <tr key={patient.id}>
+                                    <td>{patient.name}</td><td>{patient.dob}</td><td>{patient.lastVisit}</td>
+                                    <td><button className="btn btn-primary" onClick={() => setViewingPatient(patient)}>Open Chart</button></td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <Modal isOpen={!!viewingPatient} onClose={() => setViewingPatient(null)}>
+                {viewingPatient && (
+                    <>
+                        <div className="modal-header"><h2>Chart for {viewingPatient.name}</h2></div>
+                        <div className="modal-body">
+                            <div className="detail-grid">
+                                <div className="detail-item"><strong>Name</strong> {viewingPatient.name}</div>
+                                <div className="detail-item"><strong>Date of Birth</strong> {viewingPatient.dob}</div>
+                                <div className="detail-item"><strong>Last Visit</strong> {viewingPatient.lastVisit}</div>
+                            </div>
+                             <div className="detail-item" style={{gridColumn: 'span 2', marginTop: '1rem' }}>
+                                <strong>Latest Note</strong> {viewingPatient.chartSummary}
+                            </div>
+                        </div>
+                    </>
+                )}
+            </Modal>
+        </>
+    )
+};
 
 const DoctorMessagesTab = () => (
     <div className="card">
         <h3 className="card-title">Inbox</h3>
         <ul className="item-list">
-            {doctorMessagesData.map(msg => (
-                <li key={msg.id} style={{ fontWeight: msg.read ? 'normal' : 'bold' }}>
-                    <div>
-                        <p className="item-info">{msg.from}</p>
-                        <p className="item-meta">{msg.subject}</p>
-                    </div>
-                    <span>{msg.date}</span>
-                </li>
-            ))}
+            {doctorMessagesData.map(msg => (<li key={msg.id} style={{ fontWeight: msg.read ? 'normal' : 'bold' }}><div><p className="item-info">{msg.from}</p><p className="item-meta">{msg.subject}</p></div><span>{msg.date}</span></li>))}
         </ul>
     </div>
 );
 
-const OfficeAppointmentsTab = () => (
-    <div className="card">
-        <h3 className="card-title">Master Schedule - Today</h3>
-        <ul className="item-list">
-            {masterScheduleData.map(appt => (
-                <li key={appt.time}>
-                    <div>
-                        <p className="item-info">{appt.time} - {appt.patient}</p>
-                        <p className="item-meta">{appt.doctor} - {appt.reason}</p>
-                    </div>
-                    <button className="btn btn-primary">Reschedule</button>
-                </li>
-            ))}
-        </ul>
-    </div>
-);
-
-const OfficeReportsTab = () => (
-    <div className="card">
-        <h3 className="card-title">Available Reports</h3>
-        <ul className="item-list">
-            {reportsListData.map(report => (
-                <li key={report.name}>
-                    <div>
-                        <p className="item-info">{report.name}</p>
-                        <p className="item-meta">{report.description}</p>
-                    </div>
-                    <button className="btn btn-secondary">Generate</button>
-                </li>
-            ))}
-        </ul>
-    </div>
-);
-
-const PatientRegistrationTab = () => (
-    <div className="card">
-        <h3 className="card-title">New Patient Registration</h3>
-        <form>
-            <div className="form-grid">
-                <div className="form-group">
-                    <label htmlFor="firstName">First Name</label>
-                    <input type="text" id="firstName" />
-                </div>
-                <div className="form-group">
-                    <label htmlFor="lastName">Last Name</label>
-                    <input type="text" id="lastName" />
-                </div>
-                <div className="form-group">
-                    <label htmlFor="dob">Date of Birth</label>
-                    <input type="date" id="dob" />
-                </div>
-                <div className="form-group">
-                    <label htmlFor="phone">Phone Number</label>
-                    <input type="tel" id="phone" />
-                </div>
+const OfficeAppointmentsTab = () => {
+    const [rescheduling, setRescheduling] = useState(null);
+    return(
+        <>
+            <div className="card">
+                <h3 className="card-title">Master Schedule - Today</h3>
+                <ul className="item-list">
+                    {masterScheduleData.map(appt => (
+                        <li key={appt.time}>
+                            <div><p className="item-info">{appt.time} - {appt.patient}</p><p className="item-meta">{appt.doctor} - {appt.reason}</p></div>
+                            <button className="btn btn-primary" onClick={() => setRescheduling(appt)}>Reschedule</button>
+                        </li>
+                    ))}
+                </ul>
             </div>
-            <br/>
-            <button type="submit" className="btn btn-primary">Register Patient</button>
-        </form>
-    </div>
-);
+            <Modal isOpen={!!rescheduling} onClose={() => setRescheduling(null)}>
+                {rescheduling && (
+                     <>
+                        <div className="modal-header"><h2>Reschedule Appointment</h2></div>
+                        <div className="modal-body">
+                            <p>Rescheduling for <strong>{rescheduling.patient}</strong> with {rescheduling.doctor}.</p>
+                            <p>Current time: {rescheduling.time}</p>
+                            <div className="form-group"><label>New Date and Time</label><input type="datetime-local"/></div>
+                        </div>
+                        <div className="modal-footer"><button className="btn btn-secondary" onClick={() => setRescheduling(null)}>Cancel</button><button className="btn btn-primary" onClick={() => setRescheduling(null)}>Confirm</button></div>
+                    </>
+                )}
+            </Modal>
+        </>
+    );
+};
+
+const OfficeReportsTab = () => {
+    const [generatingReport, setGeneratingReport] = useState(null);
+    return (
+        <>
+            <div className="card">
+                <h3 className="card-title">Available Reports</h3>
+                <ul className="item-list">
+                    {reportsListData.map(report => (<li key={report.name}><div><p className="item-info">{report.name}</p><p className="item-meta">{report.description}</p></div><button className="btn btn-secondary" onClick={() => setGeneratingReport(report)}>Generate</button></li>))}
+                </ul>
+            </div>
+             <Modal isOpen={!!generatingReport} onClose={() => setGeneratingReport(null)}>
+                {generatingReport && (
+                     <>
+                        <div className="modal-header"><h2>Confirm Report Generation</h2></div>
+                        <div className="modal-body"><p>Are you sure you want to generate the "{generatingReport.name}" report?</p></div>
+                        <div className="modal-footer"><button className="btn btn-secondary" onClick={() => setGeneratingReport(null)}>Cancel</button><button className="btn btn-primary" onClick={() => setGeneratingReport(null)}>Generate</button></div>
+                    </>
+                )}
+            </Modal>
+        </>
+    );
+};
+
+const PatientRegistrationTab = () => {
+    const [isSuccess, setIsSuccess] = useState(false);
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        setIsSuccess(true);
+    };
+    return (
+        <>
+            <div className="card">
+                <h3 className="card-title">New Patient Registration</h3>
+                <form onSubmit={handleSubmit}>
+                    <div className="form-grid">
+                        <div className="form-group"><label htmlFor="firstName">First Name</label><input type="text" id="firstName" /></div>
+                        <div className="form-group"><label htmlFor="lastName">Last Name</label><input type="text" id="lastName" /></div>
+                        <div className="form-group"><label htmlFor="dob">Date of Birth</label><input type="date" id="dob" /></div>
+                        <div className="form-group"><label htmlFor="phone">Phone Number</label><input type="tel" id="phone" /></div>
+                    </div><br/><button type="submit" className="btn btn-primary">Register Patient</button>
+                </form>
+            </div>
+            <Modal isOpen={isSuccess} onClose={() => setIsSuccess(false)}>
+                <div className="modal-header"><h2>Success!</h2></div>
+                <div className="modal-body"><p>New patient has been successfully registered.</p></div>
+                <div className="modal-footer"><button className="btn btn-primary" onClick={() => setIsSuccess(false)}>Close</button></div>
+            </Modal>
+        </>
+    );
+};
 
 // --- Role Dashboards ---
-
 const AdminDashboard = ({ activeTab, setActiveTab }) => {
   const renderTabContent = () => {
     switch(activeTab) {
-      case 'Overview': return <AdminOverviewTab />;
-      case 'User Management': return <UserManagementTab />;
-      case 'Claims': return <InsuranceClaimsTab />;
-      case 'Analytics': return <div className="card"><p>Advanced analytics charts on patient demographics, revenue, and appointments would be here.</p></div>;
-      case 'Settings': return <div className="card"><p>Forms to manage clinic-wide settings, billing codes, and integrations would be here.</p></div>;
-      case 'Dashboard':
-      default:
-        return (
-          <div className="grid grid-cols-3">
-            <div className="card stat-card"><div className="stat-value">4</div><div className="stat-label">Doctors</div></div>
-            <div className="card stat-card"><div className="stat-value">8</div><div className="stat-label">Staff Members</div></div>
-            <div className="card stat-card"><div className="stat-value">1,204</div><div className="stat-label">Total Patients</div></div>
-          </div>
-        )
+      case 'Overview': return <AdminOverviewTab />; case 'User Management': return <UserManagementTab />; case 'Claims': return <InsuranceClaimsTab />;
+      case 'Analytics': return <div className="card"><p>Advanced analytics charts would be here.</p></div>;
+      case 'Settings': return <div className="card"><p>Clinic-wide settings would be here.</p></div>;
+      case 'Dashboard': default: return (<div className="grid grid-cols-3"><div className="card stat-card"><div className="stat-value">4</div><div className="stat-label">Doctors</div></div><div className="card stat-card"><div className="stat-value">8</div><div className="stat-label">Staff Members</div></div><div className="card stat-card"><div className="stat-value">1,204</div><div className="stat-label">Total Patients</div></div></div>)
     }
   }
-
-  return (
-    <div>
-        <div className="tabs">
-            {['Overview', 'Dashboard', 'User Management', 'Claims', 'Analytics', 'Settings'].map(tab => (
-                 <button key={tab} className={`tab ${activeTab === tab ? 'active' : ''}`} onClick={() => setActiveTab(tab)}>{tab}</button>
-            ))}
-        </div>
-        <div>{renderTabContent()}</div>
-    </div>
-  );
+  return (<div><div className="tabs">{['Overview', 'Dashboard', 'User Management', 'Claims', 'Analytics', 'Settings'].map(tab => (<button key={tab} className={`tab ${activeTab === tab ? 'active' : ''}`} onClick={() => setActiveTab(tab)}>{tab}</button>))}</div><div>{renderTabContent()}</div></div>);
 };
 
 const DoctorDashboard = ({ activeTab, setActiveTab }) => {
   const renderTabContent = () => {
     switch(activeTab) {
-      case 'Patients': return <DoctorPatientsTab />;
-      case 'Messages': return <DoctorMessagesTab />;
-      case "Today's Schedule":
-      default:
+      case 'Patients': return <DoctorPatientsTab />; case 'Messages': return <DoctorMessagesTab />;
+      case "Today's Schedule": default:
         return (
            <div className="card">
               <h3 className="card-title">Today's Appointments</h3>
               <ul className="item-list">
-                <li>
-                  <div><p className="item-info">John Appleseed</p><p className="item-meta">10:00 AM - Annual Checkup</p></div>
-                  <a href="#" className="btn btn-primary">Open Chart</a>
-                </li>
-                <li>
-                  <div><p className="item-info">Jane Doe</p><p className="item-meta">10:30 AM - Follow-up</p></div>
-                  <a href="#" className="btn btn-primary">Open Chart</a>
-                </li>
+                <li><div><p className="item-info">John Appleseed</p><p className="item-meta">10:00 AM - Annual Checkup</p></div><a href="#" className="btn btn-primary">Open Chart</a></li>
+                <li><div><p className="item-info">Jane Doe</p><p className="item-meta">10:30 AM - Follow-up</p></div><a href="#" className="btn btn-primary">Open Chart</a></li>
               </ul>
            </div>
         )
     }
   }
-  
-  return (
-    <div>
-      <div className="tabs">
-        {["Today's Schedule", 'Patients', 'Messages'].map(tab => (
-            <button key={tab} className={`tab ${activeTab === tab ? 'active' : ''}`} onClick={() => setActiveTab(tab)}>{tab}</button>
-        ))}
-      </div>
-      <div>{renderTabContent()}</div>
-    </div>
-  );
+  return (<div><div className="tabs">{["Today's Schedule", 'Patients', 'Messages'].map(tab => (<button key={tab} className={`tab ${activeTab === tab ? 'active' : ''}`} onClick={() => setActiveTab(tab)}>{tab}</button>))}</div><div>{renderTabContent()}</div></div>);
 };
 
 const OfficeDashboard = ({ activeTab, setActiveTab }) => {
    const renderTabContent = () => {
     switch(activeTab) {
-      case 'Appointments': return <OfficeAppointmentsTab />;
-      case 'Claims': return <InsuranceClaimsTab />;
-      case 'Reports': return <OfficeReportsTab />;
-      case 'Billing':
-      default:
+      case 'Appointments': return <OfficeAppointmentsTab />; case 'Claims': return <InsuranceClaimsTab />; case 'Reports': return <OfficeReportsTab />;
+      case 'Billing': default:
         return (
           <div className="grid grid-cols-2">
             <div className="card stat-card"><div className="stat-value">$12,450</div><div className="stat-label">Revenue This Week</div></div>
             <div className="card stat-card"><div className="stat-value">32</div><div className="stat-label">Pending Claims</div></div>
-            <div className="card col-span-2">
-              <h3 className="card-title">Billing & Invoicing</h3>
-               <ul className="item-list">
-                <li>
-                  <div><p className="item-info">Invoice #1023 - John Appleseed</p><p className="item-meta">Amount: $150.00 - Status: Paid</p></div>
-                  <a href="#" className="btn btn-primary">View</a>
-                </li>
-              </ul>
-            </div>
+            <div className="card col-span-2"><h3 className="card-title">Billing & Invoicing</h3><ul className="item-list"><li><div><p className="item-info">Invoice #1023 - John Appleseed</p><p className="item-meta">Amount: $150.00 - Status: Paid</p></div><a href="#" className="btn btn-primary">View</a></li></ul></div>
           </div>
         )
     }
   }
-
-  return (
-    <div>
-      <div className="tabs">
-        {['Billing', 'Claims', 'Appointments', 'Reports'].map(tab => (
-            <button key={tab} className={`tab ${activeTab === tab ? 'active' : ''}`} onClick={() => setActiveTab(tab)}>{tab}</button>
-        ))}
-      </div>
-      <div>{renderTabContent()}</div>
-    </div>
-  );
+  return (<div><div className="tabs">{['Billing', 'Claims', 'Appointments', 'Reports'].map(tab => (<button key={tab} className={`tab ${activeTab === tab ? 'active' : ''}`} onClick={() => setActiveTab(tab)}>{tab}</button>))}</div><div>{renderTabContent()}</div></div>);
 };
 
 const ReceptionDashboard = ({ activeTab, setActiveTab }) => {
+    const [checkingIn, setCheckingIn] = useState(null);
     const renderTabContent = () => {
       switch(activeTab) {
         case 'Master Calendar': return <MasterCalendarTab />;
         case 'Patient Registration': return <PatientRegistrationTab />;
-        case 'Patient Queue':
-        default:
+        case 'Patient Queue': default:
           return (
-            <div className="card">
-              <h3 className="card-title">Today's Patient Queue</h3>
-              <ul className="item-list">
-                <li>
-                  <div><p className="item-info">John Appleseed (10:00 AM)</p><p className="item-meta">Dr. Reed - Annual Checkup</p></div>
-                  <a href="#" className="btn btn-secondary">Check In</a>
-                </li>
-                <li>
-                  <div><p className="item-info">Jane Doe (10:30 AM)</p><p className="item-meta">Dr. Reed - Follow-up</p></div>
-                  <span style={{color: "var(--text-secondary)"}}>Waiting</span>
-                </li>
-              </ul>
-            </div>
+            <>
+                <div className="card">
+                  <h3 className="card-title">Today's Patient Queue</h3>
+                  <ul className="item-list">
+                    <li>
+                      <div><p className="item-info">John Appleseed (10:00 AM)</p><p className="item-meta">Dr. Reed - Annual Checkup</p></div>
+                      <button className="btn btn-secondary" onClick={() => setCheckingIn('John Appleseed')}>Check In</button>
+                    </li>
+                    <li>
+                      <div><p className="item-info">Jane Doe (10:30 AM)</p><p className="item-meta">Dr. Reed - Follow-up</p></div>
+                      <span style={{color: "var(--text-secondary)"}}>Waiting</span>
+                    </li>
+                  </ul>
+                </div>
+                <Modal isOpen={!!checkingIn} onClose={() => setCheckingIn(null)}>
+                    {checkingIn && (
+                         <>
+                            <div className="modal-header"><h2>Confirm Check-In</h2></div>
+                            <div className="modal-body"><p>Are you sure you want to check in <strong>{checkingIn}</strong>?</p></div>
+                            <div className="modal-footer"><button className="btn btn-secondary" onClick={() => setCheckingIn(null)}>Cancel</button><button className="btn btn-primary" onClick={() => setCheckingIn(null)}>Confirm</button></div>
+                        </>
+                    )}
+                </Modal>
+            </>
           );
       }
     };
-
-    return (
-        <div>
-            <div className="tabs">
-                 {['Patient Queue', 'Master Calendar', 'Patient Registration'].map(tab => (
-                    <button key={tab} className={`tab ${activeTab === tab ? 'active' : ''}`} onClick={() => setActiveTab(tab)}>{tab}</button>
-                 ))}
-            </div>
-            <div>{renderTabContent()}</div>
-        </div>
-    );
+    return (<div><div className="tabs">{['Patient Queue', 'Master Calendar', 'Patient Registration'].map(tab => (<button key={tab} className={`tab ${activeTab === tab ? 'active' : ''}`} onClick={() => setActiveTab(tab)}>{tab}</button>))}</div><div>{renderTabContent()}</div></div>);
 };
-
 
 // --- Main App Component ---
 export default function ClinicalDashboard() {
-  const [role, setRole] = useState('admin'); // admin, doctor, office, reception
+  const [role, setRole] = useState('admin');
   const [activeView, setActiveView] = useState('Overview');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
-  const getSidebarLinks = () => {
-    const links = {
-        admin: ['Overview', 'Dashboard', 'User Management', 'Claims', 'Analytics', 'Settings'],
-        doctor: ["Today's Schedule", 'Patients', 'Messages'],
-        office: ['Billing', 'Claims', 'Appointments', 'Reports'],
-        reception: ['Patient Queue', 'Master Calendar', 'Patient Registration'],
-    };
-    return links[role] || [];
-  };
+  const getSidebarLinks = (currentRole) => ({
+    admin: ['Overview', 'Dashboard', 'User Management', 'Claims', 'Analytics', 'Settings'],
+    doctor: ["Today's Schedule", 'Patients', 'Messages'],
+    office: ['Billing', 'Claims', 'Appointments', 'Reports'],
+    reception: ['Patient Queue', 'Master Calendar', 'Patient Registration'],
+  }[currentRole] || []);
 
-  React.useEffect(() => {
-    const links = getSidebarLinks();
-    setActiveView(links[0] || '');
-  }, [role]);
+  useEffect(() => {
+    const links = getSidebarLinks(role);
+    if (!links.includes(activeView)) setActiveView(links[0] || '');
+  }, [role, activeView]);
 
   const renderDashboard = () => {
     switch (role) {
-      case 'admin':
-        return <AdminDashboard activeTab={activeView} setActiveTab={setActiveView} />;
-      case 'doctor':
-        return <DoctorDashboard activeTab={activeView} setActiveTab={setActiveView} />;
-      case 'office':
-        return <OfficeDashboard activeTab={activeView} setActiveTab={setActiveView} />;
-      case 'reception':
-        return <ReceptionDashboard activeTab={activeView} setActiveTab={setActiveView} />;
-      default:
-        return <div>Select a role</div>;
+      case 'admin': return <AdminDashboard activeTab={activeView} setActiveTab={setActiveView} />;
+      case 'doctor': return <DoctorDashboard activeTab={activeView} setActiveTab={setActiveView} />;
+      case 'office': return <OfficeDashboard activeTab={activeView} setActiveTab={setActiveView} />;
+      case 'reception': return <ReceptionDashboard activeTab={activeView} setActiveTab={setActiveView} />;
+      default: return <div>Select a role</div>;
     }
   };
 
@@ -950,41 +811,16 @@ export default function ClinicalDashboard() {
             <div>
                 <h2 className="sidebar-header">ClinicPlus</h2>
                 <nav className="sidebar-nav">
-                    <ul>
-                        {getSidebarLinks().map(link => (
-                            <li key={link}>
-                                <a 
-                                    href="#" 
-                                    className={activeView === link ? 'active' : ''}
-                                    onClick={(e) => {
-                                        e.preventDefault();
-                                        setActiveView(link);
-                                        setIsSidebarOpen(false);
-                                    }}
-                                >
-                                    {link}
-                                </a>
-                            </li>
-                        ))}
-                    </ul>
+                    <ul>{getSidebarLinks(role).map(link => (<li key={link}><a href="#" className={activeView === link ? 'active' : ''} onClick={(e) => { e.preventDefault(); setActiveView(link); setIsSidebarOpen(false); }}>{link}</a></li>))}</ul>
                 </nav>
             </div>
              <div>
-                <div className="sidebar-contact">
-                    <h4 className="contact-title">Contact Support</h4>
-                    <p className="contact-info">support@clinicplus.com</p>
-                    <p className="contact-info">(555) 123-4567</p>
-                </div>
+                <div className="sidebar-contact"><h4 className="contact-title">Contact Support</h4><p className="contact-info">support@clinicplus.com</p><p className="contact-info">(555) 123-4567</p></div>
             </div>
         </aside>
         <main className="main-content">
           <header className="header">
-            <div className="header-main">
-                <button className="hamburger-btn" onClick={() => setIsSidebarOpen(true)}>
-                    <MenuIcon />
-                </button>
-                <h1>{role.charAt(0).toUpperCase() + role.slice(1)} Dashboard</h1>
-            </div>
+            <div className="header-main"><button className="hamburger-btn" onClick={() => setIsSidebarOpen(true)}><MenuIcon /></button><h1>{role.charAt(0).toUpperCase() + role.slice(1)} Dashboard</h1></div>
             <div className="role-switcher">
               <button onClick={() => setRole('admin')} className={role === 'admin' ? 'active' : ''}>Admin</button>
               <button onClick={() => setRole('doctor')} className={role === 'doctor' ? 'active' : ''}>Doctor</button>
@@ -992,9 +828,7 @@ export default function ClinicalDashboard() {
               <button onClick={() => setRole('reception')} className={role === 'reception' ? 'active' : ''}>Reception</button>
             </div>
           </header>
-          <div className="content-area">
-            {renderDashboard()}
-          </div>
+          <div className="content-area">{renderDashboard()}</div>
         </main>
       </div>
     </>
